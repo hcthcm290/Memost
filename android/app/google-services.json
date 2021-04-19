@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "523916654487",
+    "project_id": "coaibiet-b33c8",
+    "storage_bucket": "coaibiet-b33c8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:523916654487:android:43f49f32ef2537608d36d2",
+        "android_client_info": {
+          "package_name": "com.NoOne.CoAiBiet"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "523916654487-vqeaqitivl0n9426odt1c0l05rf7ps0k.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAvNxPuXy1dOoz53i7mdkDT9uIoPuizLCo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "523916654487-vqeaqitivl0n9426odt1c0l05rf7ps0k.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
