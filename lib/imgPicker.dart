@@ -12,7 +12,6 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> with AutomaticKeepAliveClientMixin {
-
   File _image;
   final picker = ImagePicker();
 
