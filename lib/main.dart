@@ -34,8 +34,8 @@ class MyApp extends StatelessWidget {
         primaryColor: Colors.pinkAccent,
       ),
       home: Scaffold(
-        body: 
-        SafeArea(
+        backgroundColor: Color.fromARGB(255, 100, 100, 100),
+        body: SafeArea(
           left: true,
           top: true,
           right: true,
