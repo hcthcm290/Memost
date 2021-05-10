@@ -1,4 +1,5 @@
 
+import 'dart:ffi';
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -31,6 +32,11 @@ enum ReactionType {
 class _PostUIState extends State<PostUI> {
 
   ReactionType _reactionType = ReactionType.none;
+  double footerFontSize = 12;
+  double footerIconSize = 25;
+
+  String _likeCount = '1.8K';
+  String _commentCount = '35K';
 
   void _handleLovedTap() {
     if(_reactionType == ReactionType.loved)
@@ -62,6 +68,26 @@ class _PostUIState extends State<PostUI> {
     }
   }
 
+  void _handleShareTap() {
+
+  }
+
+  void _handleCommentTap() {
+
+  }
+
+  void _handleGroupNameTap() {
+
+  }
+
+  void _handleUsernameTap() {
+
+  }
+
+  void _handle3DotTap() {
+
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -73,6 +99,7 @@ class _PostUIState extends State<PostUI> {
           IntrinsicHeight(
             child: Row(
               children: [
+                // Avatar
                 /// this is a way for more customize circle avatar of a post //
                 Container(
                   width: 50,
@@ -94,20 +121,28 @@ class _PostUIState extends State<PostUI> {
                 //   borderRadius: BorderRadius.circular(50),
                 //   child: CachedNetworkImage(imageUrl: widget.group.avatar, width: 50, height: 50, fit: BoxFit.fill,),
                 // ),
+
+                // Title
                 Expanded(
                   child: Column(
                     children: [
                       Spacer(),
                       Align(
                         alignment: Alignment.topLeft,
-                        child: Text("r/${widget.group.name}", style: TextStyle(fontSize: 20, color: Colors.white),)
+                        child: GestureDetector(
+                          onTap: this._handleGroupNameTap,
+                          child: Text("r/${widget.group.name}", style: TextStyle(fontSize: 20, color: Colors.white),)
+                        )
                       ),
                       Spacer(),
                       Align(
                         alignment: Alignment.topLeft,
                         child: Row(
                           children: [
-                            Text("u/${widget.post.owner}", style: TextStyle(fontSize: 15, color: Colors.white)),
+                            GestureDetector(
+                              onTap: this._handleUsernameTap,
+                              child: Text("u/${widget.post.owner}", style: TextStyle(fontSize: 15, color: Colors.white))
+                            ),
                             Spacer(flex: 1,),
                             //Icon(Icons.album, color: Colors.white, size: 10,),
                             Spacer(flex: 1,),
@@ -126,7 +161,11 @@ class _PostUIState extends State<PostUI> {
                   color: Colors.black,
                 ),
 
-                Icon(Icons.more_horiz, size: 40, color: Colors.white,)
+                // 3 Dot
+                GestureDetector(
+                  onTap: this._handle3DotTap,
+                  child: Icon(Icons.more_horiz, size: 40, color: Colors.white,)
+                )
               ],
             ),
           ),
@@ -140,7 +179,7 @@ class _PostUIState extends State<PostUI> {
           ),
           // Image
           CachedNetworkImage(imageUrl: widget.post.image, placeholder: (context, url) => CircularProgressIndicator(),),
-          // Footẻ
+          // Footer
           Row(
             children: [
               // Love && NotLove
@@ -154,14 +193,14 @@ class _PostUIState extends State<PostUI> {
                       onTap: _handleLovedTap,
                       child: Icon(
                         _reactionType == ReactionType.loved ? CupertinoIcons.heart_fill : CupertinoIcons.heart, 
-                        size: 35, 
+                        size: this.footerIconSize, 
                         color: _reactionType == ReactionType.loved ? Colors.redAccent : Colors.white,
                       ),
                     ),
-                    Spacer(),
-                    Text("1.2K", 
+                    Spacer(flex: 1,),
+                    Text(this._likeCount, 
                       style: TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.w600,
+                        fontSize: this.footerFontSize, fontWeight: FontWeight.w800,
                         color: _reactionType == ReactionType.none 
                           ? Colors.white 
                           : _reactionType == ReactionType.loved
@@ -169,58 +208,65 @@ class _PostUIState extends State<PostUI> {
                             : Colors.blue
                       )
                     ),
-                    Spacer(),
+                    Spacer(flex: 1,),
                     GestureDetector(
                       onTap: _handleNotLoveTap,
                       child: Icon(
                         _reactionType == ReactionType.notloved ? CupertinoIcons.heart_slash_fill : CupertinoIcons.heart_slash, 
-                        size: 35, 
+                        size: this.footerIconSize, 
                         color: _reactionType == ReactionType.notloved ? Colors.blue : Colors.white,
                       ),
-                    )
+                    ),
+                    Spacer(flex: 10)
                   ], 
                 ),
               ),
-              Spacer(flex: 10,),
+              Spacer(flex: 1,),
               // Comment
-              Container(
-                width: 110,
-                height: 50,
-                //color: Colors.pink,
-                child: Center(
-                  child: Row(
-                    children: [
-                      Spacer(),
-                      Icon(CupertinoIcons.bubble_left, color: Colors.white, size: 30,),
-                      Container(width: 10, height: 50),
-                      Padding(
-                        padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                        child: Text('35k', style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.w800), textAlign: TextAlign.left,)
-                      ),
-                      Spacer(),
-                    ]
-                  )
+              GestureDetector(
+                onTap: this._handleCommentTap,
+                child: Container(
+                  width: 80,
+                  height: 50,
+                  //color: Colors.pink,
+                  child: Center(
+                    child: Row(
+                      children: [
+                        Spacer(flex: 3,),
+                        Icon(CupertinoIcons.bubble_left, color: Colors.white, size: this.footerIconSize,),
+                        Spacer(flex: 1),
+                        Padding(
+                          padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                          child: Text(this._commentCount, style: TextStyle(fontSize: this.footerFontSize, color: Colors.white, fontWeight: FontWeight.w800), textAlign: TextAlign.left,)
+                        ),
+                        Spacer(flex: 3,),
+                      ]
+                    )
+                  ),
                 ),
               ),
-              Spacer(),
+              Spacer(flex: 10,),
               // Share
-              Container(
-                width: 110,
-                height: 50,
-                //color: Colors.green,
-                child: Center(
-                  child: Row(
-                    children: [
-                      Spacer(),
-                      Padding(padding: EdgeInsets.fromLTRB(0, 0, 0, 6),child: Icon(CupertinoIcons.share, color: Colors.white, size: 30,)),
-                      Container(width: 10, height: 50),
-                      Padding(
-                        padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                        child: Text('Share', style: TextStyle(fontSize: 18, color: Colors.white), textAlign: TextAlign.left,)
-                      ),
-                      Spacer(),
-                    ]
-                  )
+              GestureDetector(
+                onTap: this._handleShareTap,
+                child: Container(
+                  width: 80,
+                  height: 50,
+                  //color: Colors.green,
+                  child: Center(
+                    child: Row(
+                      children: [
+                        Spacer(),
+                        Padding(padding: EdgeInsets.fromLTRB(0, 0, 0, 6),child: Icon(CupertinoIcons.share, color: Colors.white, size: this.footerIconSize,)),
+                        Spacer(),
+                        Padding(
+                          padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                          child: Text('Share', style: TextStyle(fontSize: this.footerFontSize, color: Colors.white), textAlign: TextAlign.left,)
+                        ),
+                        Spacer(),
+                      ]
+                    )
+                  ),
                 ),
               ),
             ],
