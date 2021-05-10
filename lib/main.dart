@@ -7,27 +7,20 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_application_1/CustomWidgets/ListPost.dart';
+import 'package:flutter_application_1/Screens/LoginScreen.dart';
 import 'package:flutter_application_1/Model/Group.dart';
 import 'package:flutter_application_1/Model/Post.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
 
-  Group group = Group();
-  Post post = Post();
-
   @override
   Widget build(BuildContext context) {
-    group.id = "001";
-    group.name = "memes";
-    group.avatar = "https://www.w3schools.com/w3css/img_nature.jpg";
 
-    post.id = "001";
-    post.image = "https://www.w3schools.com/w3css/img_lights.jpg";
-    post.owner = "basafish";
-    post.title = "First post ever";
-    
+    Firebase.initializeApp();
+
     return MaterialApp(
       title: 'Startup Name Generator 2',
       theme: ThemeData(
@@ -40,16 +33,7 @@ class MyApp extends StatelessWidget {
           top: true,
           right: true,
           bottom: true,
-          child: Container(
-            child: ListView.separated(
-              padding: EdgeInsets.all(10),
-              itemCount: 10,
-              itemBuilder: (BuildContext context, int index) {
-                return PostUI(post: post, group: group,);
-              },
-              separatorBuilder: (BuildContext context, int index) => Divider(height: 10.0,),
-            ),
-          ),
+          child: RegisterScene()
         ),
       ),
     );
