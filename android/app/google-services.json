@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:523916654487:android:43f49f32ef2537608d36d2",
+        "mobilesdk_app_id": "1:523916654487:android:15802de6343c9eee8d36d2",
         "android_client_info": {
-          "package_name": "com.NoOne.CoAiBiet"
+          "package_name": "com.MO.CAB"
         }
       },
       "oauth_client": [

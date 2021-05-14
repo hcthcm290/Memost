@@ -1,11 +1,21 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_application_1/Services/UserCredentialService.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 
-class RegisterScene extends StatelessWidget {
+class RegisterScene extends StatefulWidget {
+  @override
+  _RegisterSceneState createState() => _RegisterSceneState();
+}
+
+class _RegisterSceneState extends State<RegisterScene> {
   String _email;
   String _password;
+  UserCredentialService _userCredentialService = UserCredentialService();
+  bool _passwordHidden = true;
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
@@ -30,20 +40,17 @@ class RegisterScene extends StatelessWidget {
   }
 
   void _handleRegisterButtonClick() async {
-    final formState = _formKey.currentState;
-    if(true) {
-      try {
-        //UserCredential newUser = await FirebaseAuth.instance.createUserWithEmailAndPassword(email: _email, password: _password);
-        //print(newUser.user.email);
-
-      } on FirebaseAuthException catch (e) {
-        print('Failed with error code: ${e.code}');
-        print(e.message);
-      } catch (e) {
-        print(e);
-      }
-      
+    try {
+      UserCredential newUser = await this._userCredentialService.registerNewUserWithEmail(this._email, this._password);
+    } on Exception catch (e) {
+      print(e);
     }
+  }
+
+  void _handleHidePasswordTap() {
+    this._passwordHidden = !this._passwordHidden;
+
+    setState(() {});
   }
 
   @override
@@ -51,20 +58,24 @@ class RegisterScene extends StatelessWidget {
     return Container(
       child: Column(
         children: [
-          TextFormField(
-            validator: this._emailValidation,
-            onSaved: this._onEmailInput,
+          TextField(
+            onChanged: this._onEmailInput,
             decoration: InputDecoration(
               labelText: 'Email',
               fillColor: Colors.white,
             ),
           ),
-          TextFormField(
-            validator: this._passwordVAlidation,
-            onSaved: this._onPasswordInput,
+          TextField(
+            obscureText: this._passwordHidden,
+            onChanged: this._onPasswordInput,
             decoration: InputDecoration(
               labelText: 'Password',
               fillColor: Colors.white,
+              suffixIcon: GestureDetector(
+                onTap: _handleHidePasswordTap,
+                child: Icon(this._passwordHidden 
+                          ? Icons.visibility_off 
+                          : Icons.visibility),)
             ),
           ),
           ElevatedButton(
