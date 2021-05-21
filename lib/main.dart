@@ -8,7 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_application_1/CustomWidgets/ListPost.dart';
-import 'package:flutter_application_1/Screens/LoginScreen.dart';
+import 'package:flutter_application_1/Screens/TopicScreen.dart';
 import 'package:flutter_application_1/Model/Group.dart';
 import 'package:flutter_application_1/Model/Post.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -20,10 +20,8 @@ Future<void> main() async {
 }
 
 class MyApp extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
-
     return MaterialApp(
       title: 'Startup Name Generator 2',
       theme: ThemeData(
@@ -32,12 +30,11 @@ class MyApp extends StatelessWidget {
       home: Scaffold(
         backgroundColor: Color.fromARGB(255, 100, 100, 100),
         body: SafeArea(
-          left: true,
-          top: true,
-          right: true,
-          bottom: true,
-          child: RegisterScene()
-        ),
+            left: true,
+            top: true,
+            right: true,
+            bottom: true,
+            child: TopicScene()),
       ),
     );
   }
