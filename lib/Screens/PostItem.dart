@@ -59,20 +59,31 @@ class _TopicSceneState extends State<TopicScene> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      child: Column(
+      child: Row(
         children: [
+          // TODO: Rating
           Image(
             fit: BoxFit.fitWidth,
             image: _getBigImage(),
           ),
+          // TODO: Content
           Container(
             height: 100,
-            child: Row(
+            child: Column(
               children: [
-                CircleAvatar(
-                  backgroundImage: _getSmallImage(),
-                  radius: 50,
+                Container(
+                  child: Row(
+                    children: [
+                      // TODO: Username
+                      CircleAvatar(
+                        backgroundImage: _getSmallImage(),
+                        radius: 50,
+                      )
+                      // TODO: Date posted
+                    ],
+                  ),
                 ),
+                // TODO: Post name
                 Expanded(
                   child: AutoSizeText(
                     _getTopicName(),
@@ -81,9 +92,17 @@ class _TopicSceneState extends State<TopicScene> {
                     maxLines: 1,
                   ),
                 ),
-                ElevatedButton(
-                  child: Text(_subButtonName()),
-                  onPressed: _onSubButtonPressed,
+                // TODO: Post preview
+                // TODO: Post action
+                Container(
+                  child: Row(
+                    children: [
+                      // TODO: Like
+                      // TODO: Dislike
+                      // TODO: Comment (link)
+                      // TODO: Other actions: Copy link, Report
+                    ],
+                  ),
                 )
               ],
             ),
