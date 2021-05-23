@@ -29,6 +29,9 @@ class _RegisterSceneState extends State<RegisterScene> {
     if(input.length < 8) {
       return "Password must have at least 8 character";
     }
+    else {
+      return null;
+    }
   }
 
   void _onEmailInput(String input) {
@@ -40,11 +43,13 @@ class _RegisterSceneState extends State<RegisterScene> {
   }
 
   void _handleRegisterButtonClick() async {
-    try {
-      UserCredential newUser = await this._userCredentialService.registerNewUserWithEmail(this._email, this._password);
-    } on Exception catch (e) {
-      print(e);
-    }
+    // try {
+    //   UserCredential newUser = await this._userCredentialService.registerNewUserWithEmail(this._email, this._password);
+    // } on Exception catch (e) {
+    //   print(e);
+    // }
+
+    await _userCredentialService.verifyNewEmail("dragonnica123@gmail.com");
   }
 
   void _handleHidePasswordTap() {
