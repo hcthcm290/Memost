@@ -30,6 +30,19 @@ class _PostUIState extends State<PostUI> {
   String _likeCount = '1.8K';
   String _commentCount = '35K';
 
+  ImageProvider _avatarImage;
+
+  _PostUIState() {}
+
+  @override
+  void initState() {
+    super.initState();
+
+    widget.group.getAvatar().then((value) => this.setState(() {
+          _avatarImage = value;
+        }));
+  }
+
   void _handleLovedTap() {
     if (_reactionType == ReactionType.loved) {
       setState(() {
@@ -80,12 +93,15 @@ class _PostUIState extends State<PostUI> {
                 Container(
                   width: 50,
                   height: 50,
-                  decoration: new BoxDecoration(
-                      shape: BoxShape.circle,
-                      image: new DecorationImage(
-                          image:
-                              CachedNetworkImageProvider(widget.group.avatar),
-                          fit: BoxFit.cover)),
+                  decoration: _avatarImage != null
+                      ? new BoxDecoration(
+                          shape: BoxShape.circle,
+                          image: new DecorationImage(
+                            image: _avatarImage,
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      : null,
                 ),
                 Container(
                   width: 5,
@@ -304,22 +320,21 @@ class _PostUIState extends State<PostUI> {
 }
 
 class ListPostUI extends StatefulWidget {
+  Group group;
+
+  ListPostUI({@required Group group}) {
+    this.group = group;
+  }
   @override
   _ListPostUIState createState() => _ListPostUIState();
 }
 
 class _ListPostUIState extends State<ListPostUI> {
-
-  Group group = Group();
+  Group group() => widget.group;
   Post post = Post();
 
   @override
   Widget build(BuildContext context) {
-
-    group.id = "001";
-    group.name = "memes";
-    group.avatar = "https://www.w3schools.com/w3css/img_nature.jpg";
-
     post.id = "001";
     post.image = "https://www.w3schools.com/w3css/img_lights.jpg";
     post.owner = "basafish";
@@ -332,7 +347,7 @@ class _ListPostUIState extends State<ListPostUI> {
         itemBuilder: (BuildContext context, int index) {
           return PostUI(
             post: post,
-            group: group,
+            group: group(),
           );
         },
         separatorBuilder: (BuildContext context, int index) => Divider(

@@ -30,11 +30,12 @@ class MyApp extends StatelessWidget {
       home: Scaffold(
         backgroundColor: Color.fromARGB(255, 100, 100, 100),
         body: SafeArea(
-            left: true,
-            top: true,
-            right: true,
-            bottom: true,
-            child: TopicScene()),
+          left: true,
+          top: true,
+          right: true,
+          bottom: true,
+          child: TopicScreen(groupName: "Memes"),
+        ),
       ),
     );
   }
