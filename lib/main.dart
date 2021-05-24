@@ -34,7 +34,9 @@ class MyApp extends StatelessWidget {
           top: true,
           right: true,
           bottom: true,
-          child: TopicScreen(groupName: "Memes"),
+          child: TopicScreen(
+            groupName: "Memes",
+          ),
         ),
       ),
     );

@@ -125,7 +125,7 @@ class _PostUIState extends State<PostUI> {
                           child: GestureDetector(
                               onTap: this._handleGroupNameTap,
                               child: Text(
-                                "r/${widget.group.name}",
+                                "r/${widget.group?.name}",
                                 style: TextStyle(
                                     fontSize: 20, color: Colors.white),
                               ))),
@@ -136,7 +136,7 @@ class _PostUIState extends State<PostUI> {
                           children: [
                             GestureDetector(
                                 onTap: this._handleUsernameTap,
-                                child: Text("u/${widget.post.owner}",
+                                child: Text("u/${widget.post?.owner}",
                                     style: TextStyle(
                                         fontSize: 15, color: Colors.white))),
                             Spacer(
@@ -320,11 +320,10 @@ class _PostUIState extends State<PostUI> {
 }
 
 class ListPostUI extends StatefulWidget {
-  Group group;
+  final Group group;
 
-  ListPostUI({@required Group group}) {
-    this.group = group;
-  }
+  ListPostUI({@required this.group});
+
   @override
   _ListPostUIState createState() => _ListPostUIState();
 }
@@ -341,17 +340,24 @@ class _ListPostUIState extends State<ListPostUI> {
     post.title = "First post ever";
 
     return Container(
-      child: ListView.separated(
-        padding: EdgeInsets.all(10),
-        itemCount: 10,
-        itemBuilder: (BuildContext context, int index) {
-          return PostUI(
-            post: post,
-            group: group(),
-          );
-        },
-        separatorBuilder: (BuildContext context, int index) => Divider(
-          height: 10.0,
+      child: Expanded(
+        flex: 100,
+        child: SizedBox(
+          height: 400,
+          width: 400,
+          child: ListView.separated(
+            padding: EdgeInsets.all(10),
+            itemCount: 10,
+            itemBuilder: (BuildContext context, int index) {
+              return PostUI(
+                post: post,
+                group: group(),
+              );
+            },
+            separatorBuilder: (BuildContext context, int index) => Divider(
+              height: 10.0,
+            ),
+          ),
         ),
       ),
     );
