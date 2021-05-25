@@ -1,5 +1,6 @@
 import 'dart:ffi';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
@@ -332,6 +333,22 @@ class _ListPostUIState extends State<ListPostUI> {
   Group group() => widget.group;
   Post post = Post();
 
+  Widget itemBuilder(BuildContext context, int index) {
+    return PostUI(
+      post: post,
+      group: group(),
+    );
+  }
+
+  separatorBuilder(BuildContext context, int index) => Divider(
+        height: 10.0,
+      );
+
+  int itemCount = 10;
+  static int _computeActualChildCount(int itemCount) {
+    return max(0, itemCount * 2 - 1);
+  }
+
   @override
   Widget build(BuildContext context) {
     post.id = "001";
@@ -339,27 +356,42 @@ class _ListPostUIState extends State<ListPostUI> {
     post.owner = "basafish";
     post.title = "First post ever";
 
-    return Container(
+    return /*
+        Container(
       child: Expanded(
         flex: 100,
         child: SizedBox(
           height: 400,
           width: 400,
-          child: ListView.separated(
-            padding: EdgeInsets.all(10),
-            itemCount: 10,
-            itemBuilder: (BuildContext context, int index) {
-              return PostUI(
-                post: post,
-                group: group(),
-              );
-            },
-            separatorBuilder: (BuildContext context, int index) => Divider(
-              height: 10.0,
-            ),
+          child:
+              // */
+        SliverList(
+      delegate: SliverChildBuilderDelegate(
+        // Copied from ListView :)
+        (BuildContext context, int index) {
+          final int itemIndex = index ~/ 2;
+          Widget widget;
+          if (index.isEven) {
+            widget = itemBuilder(context, itemIndex);
+          } else {
+            widget = separatorBuilder(context, itemIndex);
+            assert(() {
+              if (widget == null) {
+                // ignore: dead_code
+                throw FlutterError('separatorBuilder cannot return null.');
+              }
+              return true;
+            }());
+          }
+          return widget;
+        },
+        childCount: _computeActualChildCount(itemCount),
+      ),
+
+      /*
           ),
         ),
-      ),
+      ), // */
     );
   }
 }

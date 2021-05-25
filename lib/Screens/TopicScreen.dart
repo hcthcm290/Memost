@@ -16,14 +16,18 @@ class TopicScreen extends StatefulWidget {
 
   TopicScreen({@required this.groupName, this.credentialService}) {
     // DB table add
-    /*
+    //*
     Group temp = new Group();
     temp.name = "Memes";
     temp.createdDate = DateTime.now();
+    // */
+    /*
     db.FirebaseFirestore.instance
         .collection("group")
         .doc(temp.name)
         .set(temp.toJson());
+    // */
+
     // */
   }
   @override
@@ -41,6 +45,9 @@ class _TopicScreenState extends State<TopicScreen> {
   db.DocumentReference topicNode;
   db.CollectionReference postNode;
 
+  ImageProvider _avatar;
+  ImageProvider _background;
+
   _TopicScreenState({UserCredentialService credentialService}) {
     _userCredentialService = credentialService;
     if (_userCredentialService == null)
@@ -56,8 +63,22 @@ class _TopicScreenState extends State<TopicScreen> {
         .then((value) {
       setState(() {
         group = Group.fromJson(value.data());
+
+        group.getAvatar().then((value) {
+          setState(() {
+            _avatar = value;
+          });
+        });
+        /*
+        group.getBackground().then((value) {
+          setState(() {
+            _background = value;
+          });
+        });
+        // */
       });
     });
+
     super.initState();
     topicNode = store.collection("topic").doc(widget.groupName);
     postNode = topicNode.collection("posts");
@@ -70,7 +91,10 @@ class _TopicScreenState extends State<TopicScreen> {
   }
 
   ImageProvider _getSmallImage() {
-    return AssetImage("images/lake.jpg");
+    if (_avatar != null)
+      return _avatar;
+    else
+      return AssetImage("images/lake.jpg");
   }
 
   String _getTopicName() {
@@ -102,88 +126,104 @@ class _TopicScreenState extends State<TopicScreen> {
     if (group != null)
       return ListPostUI(group: group);
     else
-      return nullWidget();
+      return null;
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      child: ListView(
-        children: [
-          Stack(
-            children: [
-              Container(
+  Widget topBar() {
+    return SliverAppBar(
+      titleSpacing: 0,
+      expandedHeight: 220,
+      flexibleSpace: Container(
+        height: 220,
+        child: Stack(
+          alignment: AlignmentDirectional.bottomCenter,
+          children: [
+            Flexible(
+              child: Container(
+                margin: EdgeInsets.fromLTRB(0, 0, 0, 70),
                 child: Image(
                   fit: BoxFit.fitHeight,
                   image: _getBigImage(),
                 ),
                 decoration: BoxDecoration(
-                  color: Color.fromARGB(255, 255, 255, 255),
+                  color: Colors.white10,
                 ),
                 height: 150,
-                width: 1000,
+                alignment: Alignment.center,
               ),
-              Container(
-                padding: EdgeInsets.fromLTRB(0, 150, 0, 0),
-                child: Divider(
-                  height: 10.0,
-                  thickness: 10,
-                ),
+            ),
+            Container(
+              margin: EdgeInsets.fromLTRB(0, 0, 0, 60),
+              child: Divider(
+                height: 10.0,
+                thickness: 10,
               ),
-              Container(
-                padding: EdgeInsets.fromLTRB(0, 60, 0, 0),
-                height: 220,
-                child: Row(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.fromLTRB(10, 80, 0, 0),
-                      child: CircleAvatar(
-                        backgroundImage: _getSmallImage(),
-                        radius: 40,
+            ),
+            Container(
+              margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
+              height: 80,
+              child: Row(
+                children: [
+                  Container(
+                    margin: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                    child: CircleAvatar(
+                      backgroundImage: _getSmallImage(),
+                      radius: 35,
+                    ),
+                  ),
+                  Spacer(),
+                  Flexible(
+                    flex: 20,
+                    child: Container(
+                      padding: EdgeInsets.fromLTRB(10, 20, 0, 10),
+                      child: AutoSizeText(
+                        "r/" + _getTopicName(),
+                        style: TextStyle(
+                          fontSize: 50,
+                          color: Color.fromARGB(255, 255, 255, 255),
+                        ),
+                        maxLines: 2,
                       ),
                     ),
-                    Spacer(),
-                    Flexible(
-                      flex: 20,
-                      child: Container(
-                        padding: EdgeInsets.fromLTRB(10, 100, 0, 10),
-                        child: AutoSizeText(
-                          "r/" + _getTopicName(),
-                          style: TextStyle(
-                            fontSize: 50,
-                            color: Color.fromARGB(255, 255, 255, 255),
-                          ),
-                          maxLines: 2,
+                  ),
+                  Spacer(flex: 5),
+                  Container(
+                    padding: EdgeInsets.fromLTRB(10, 20, 0, 10),
+                    child: ElevatedButton(
+                      child: Text(
+                        _subButtonName(),
+                        style: TextStyle(
+                          fontSize: 20,
+                          color: Color.fromARGB(255, 255, 255, 255),
                         ),
                       ),
+                      onPressed: _onSubButtonPressed,
                     ),
-                    Spacer(flex: 5),
-                    Container(
-                      padding: EdgeInsets.fromLTRB(10, 100, 0, 10),
-                      child: ElevatedButton(
-                        child: Text(
-                          _subButtonName(),
-                          style: TextStyle(
-                            fontSize: 20,
-                            color: Color.fromARGB(255, 255, 255, 255),
-                          ),
-                        ),
-                        onPressed: _onSubButtonPressed,
-                      ),
+                  ),
+                  Flexible(
+                    child: Container(
+                      width: 10,
                     ),
-                    Flexible(
-                      child: Container(
-                        width: 10,
-                      ),
-                    )
-                  ],
-                ),
+                  )
+                ],
               ),
-            ],
-          ),
-          listPost()
-        ],
+            ),
+          ],
+        ),
       ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    List<Widget> list = [];
+    Widget _topBar = topBar();
+    if (listPost != null) list.add(_topBar);
+    Widget _listPost = listPost();
+    if (listPost != null) list.add(_listPost);
+
+    return CustomScrollView(
+      slivers: list,
     );
   }
 }
