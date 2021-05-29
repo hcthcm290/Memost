@@ -233,7 +233,7 @@ class _PostUIState extends State<PostUI> {
                 child: Container(
                   width: 80,
                   height: 50,
-                  //color: Colors.pink,
+                  color: Colors.pink,
                   child: Center(
                       child: Row(children: [
                     Spacer(
@@ -270,28 +270,28 @@ class _PostUIState extends State<PostUI> {
                 child: Container(
                   width: 80,
                   height: 50,
-                  //color: Colors.green,
+                  color: Colors.green,
                   child: Center(
-                      child: Row(children: [
-                    Spacer(),
-                    Padding(
-                        padding: EdgeInsets.fromLTRB(0, 0, 0, 6),
-                        child: Icon(
-                          CupertinoIcons.share,
-                          color: Colors.white,
-                          size: this.footerIconSize,
-                        )),
-                    Spacer(),
-                    Padding(
-                        padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                        child: Text(
-                          'Share',
-                          style: TextStyle(
-                              fontSize: this.footerFontSize,
-                              color: Colors.white),
-                          textAlign: TextAlign.left,
-                        )),
-                    Spacer(),
+                    child: Row(children: [
+                      Spacer(),
+                      Padding(
+                          padding: EdgeInsets.fromLTRB(0, 0, 0, 6),
+                          child: Icon(
+                            CupertinoIcons.share,
+                            color: Colors.white,
+                            size: this.footerIconSize,
+                          )),
+                      Spacer(),
+                      Padding(
+                          padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                          child: Text(
+                            'Share',
+                            style: TextStyle(
+                                fontSize: this.footerFontSize,
+                                color: Colors.white),
+                            textAlign: TextAlign.left,
+                          )),
+                      Spacer(),
                   ])),
                 ),
               ),
