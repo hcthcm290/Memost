@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_application_1/Screens/Login/Components/AgreementAndPolicy.dart';
 import 'package:flutter_application_1/Screens/Login/Components/LoginOptionCard.dart';
@@ -17,6 +18,12 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  UserCredentialService _userCredentialService = new UserCredentialService();
+  String _email = "";
+  String _password = "";
+  String _emailError = null;
+  String _passwordError = null;
+
   void _loginWithGoogle() {
     print("login with google");
   }
@@ -29,15 +36,38 @@ class _LoginScreenState extends State<LoginScreen> {
     print("login with Twitter");
   }
 
-  void _signUp() {
+  void _signUp() async {
     print("sign up");
+
+    try {
+      await FirebaseAuth.instance.signOut();
+      print("signed out");
+    } on FirebaseAuthException catch (e) {}
   }
 
   void _forgotPassword() {
     print("forgot password");
   }
 
-  void _continue() {}
+  void _continue() async {
+    print("email: $_email , password: $_password");
+
+    String result =
+        await _userCredentialService.loginWithEmailPassword(_email, _password);
+
+    if (result == "user-not-found") {
+      _emailError = "Email not exist";
+      setState(() {});
+    } else if (result == "wrong-password") {
+      print("Wrond password");
+      _passwordError = "Wrong password";
+      setState(() {});
+    } else if (result == "unknown") {
+      print("Unknown error");
+    } else {
+      print("login success with uid $result");
+    }
+  }
 
   FocusNode _userNameFN = FocusNode();
   FocusNode _passwordFN = FocusNode();
@@ -46,6 +76,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    FirebaseAuth.instance.authStateChanges().listen((User user) {
+      if (user == null) {
+        print("logout");
+      } else {
+        print("log in");
+      }
+    });
+
     var loginMethodsContainer = Container(
       padding:
           EdgeInsets.only(top: defaultPadding * 0.25, bottom: defaultPadding),
@@ -99,16 +137,29 @@ class _LoginScreenState extends State<LoginScreen> {
                 loginMethodsContainer,
                 CustomDivider(),
                 SizedBox(height: defaultPadding),
-                // Username
+                // Email
                 TextField(
+                  onChanged: (value) {
+                    _email = value;
+
+                    if (_emailError != null) {
+                      _emailError = null;
+                      setState(() {});
+                    }
+                  },
                   style: Theme.of(context)
                       .textTheme
                       .headline6
                       .copyWith(fontWeight: FontWeight.w300),
                   focusNode: _userNameFN,
                   decoration: InputDecoration(
+                    errorText: _emailError,
+                    errorStyle: Theme.of(context)
+                        .textTheme
+                        .subtitle2
+                        .copyWith(color: Colors.redAccent),
                     contentPadding: EdgeInsets.only(bottom: 0),
-                    labelText: "Username",
+                    labelText: "Email",
                     labelStyle: Theme.of(context).textTheme.headline6.copyWith(
                         color:
                             _userNameFN.hasFocus ? Colors.blue : Colors.white60,
@@ -120,6 +171,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 SizedBox(height: defaultPadding),
                 // Password
                 TextField(
+                  onChanged: (value) {
+                    _password = value;
+
+                    if (_passwordError != null) {
+                      _passwordError = null;
+                      setState(() {});
+                    }
+                  },
                   obscureText: hidePassword,
                   obscuringCharacter: '*',
                   style: Theme.of(context)
@@ -128,6 +187,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       .copyWith(fontWeight: FontWeight.w300),
                   focusNode: _passwordFN,
                   decoration: InputDecoration(
+                    errorText: _passwordError,
                     contentPadding: EdgeInsets.only(bottom: 0),
                     suffixIcon: InkWell(
                       splashColor: Colors.white,
