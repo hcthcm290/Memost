@@ -23,6 +23,7 @@ class _LoginScreenState extends State<LoginScreen> {
   String _password = "";
   String _emailError = null;
   String _passwordError = null;
+  bool _processing = false;
 
   void _loginWithGoogle() {
     print("login with google");
@@ -51,22 +52,24 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _continue() async {
     print("email: $_email , password: $_password");
+    _processing = true;
+    setState(() {});
 
     String result =
         await _userCredentialService.loginWithEmailPassword(_email, _password);
 
     if (result == "user-not-found") {
       _emailError = "Email not exist";
-      setState(() {});
     } else if (result == "wrong-password") {
-      print("Wrond password");
       _passwordError = "Wrong password";
-      setState(() {});
     } else if (result == "unknown") {
       print("Unknown error");
     } else {
+      _processing = false;
       print("login success with uid $result");
     }
+    _processing = false;
+    setState(() {});
   }
 
   FocusNode _userNameFN = FocusNode();
@@ -122,147 +125,173 @@ class _LoginScreenState extends State<LoginScreen> {
           height: MediaQuery.of(context).size.height -
               MediaQuery.of(context).viewInsets.bottom,
           color: Colors.black,
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Log in",
-                  style: Theme.of(context)
-                      .textTheme
-                      .headline5
-                      .copyWith(color: Colors.white),
-                ),
-                AgreementAndPolicy(),
-                loginMethodsContainer,
-                CustomDivider(),
-                SizedBox(height: defaultPadding),
-                // Email
-                TextField(
-                  onChanged: (value) {
-                    _email = value;
-
-                    if (_emailError != null) {
-                      _emailError = null;
-                      setState(() {});
-                    }
-                  },
-                  style: Theme.of(context)
-                      .textTheme
-                      .headline6
-                      .copyWith(fontWeight: FontWeight.w300),
-                  focusNode: _userNameFN,
-                  decoration: InputDecoration(
-                    errorText: _emailError,
-                    errorStyle: Theme.of(context)
-                        .textTheme
-                        .subtitle2
-                        .copyWith(color: Colors.redAccent),
-                    contentPadding: EdgeInsets.only(bottom: 0),
-                    labelText: "Email",
-                    labelStyle: Theme.of(context).textTheme.headline6.copyWith(
-                        color:
-                            _userNameFN.hasFocus ? Colors.blue : Colors.white60,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 20,
-                        height: 0.5),
-                  ),
-                ),
-                SizedBox(height: defaultPadding),
-                // Password
-                TextField(
-                  onChanged: (value) {
-                    _password = value;
-
-                    if (_passwordError != null) {
-                      _passwordError = null;
-                      setState(() {});
-                    }
-                  },
-                  obscureText: hidePassword,
-                  obscuringCharacter: '*',
-                  style: Theme.of(context)
-                      .textTheme
-                      .headline6
-                      .copyWith(fontWeight: FontWeight.w300),
-                  focusNode: _passwordFN,
-                  decoration: InputDecoration(
-                    errorText: _passwordError,
-                    contentPadding: EdgeInsets.only(bottom: 0),
-                    suffixIcon: InkWell(
-                      splashColor: Colors.white,
-                      onTap: () {
-                        hidePassword = !hidePassword;
-                        setState(() {});
-                      },
-                      child: Padding(
-                        padding: EdgeInsets.only(
-                            right: defaultPadding, top: defaultPadding),
-                        child: Icon(
-                          CupertinoIcons.eye,
-                          color: hidePassword ? Colors.white60 : Colors.blue,
-                          size: 26,
-                        ),
-                      ),
-                    ),
-                    labelText: "Password",
-                    labelStyle: Theme.of(context).textTheme.headline6.copyWith(
-                        color:
-                            _passwordFN.hasFocus ? Colors.blue : Colors.white60,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 20,
-                        height: 0.5),
-                  ),
-                ),
-                SizedBox(height: defaultPadding * 1.75),
-                // Signup text
-                RichText(
-                    text: TextSpan(children: [
-                  TextSpan(
-                      text: "New to Memmost? ",
+          child: Stack(children: [
+            AbsorbPointer(
+              absorbing: _processing ? true : false,
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Log in",
                       style: Theme.of(context)
                           .textTheme
-                          .subtitle2
-                          .copyWith(color: Colors.white54)),
-                  TextSpan(
-                      text: "Sign up",
-                      recognizer: TapGestureRecognizer()..onTap = _signUp,
-                      style: Theme.of(context).textTheme.subtitle1.copyWith(
-                          color: Colors.blue, fontWeight: FontWeight.w800)),
-                ])),
-                SizedBox(height: defaultPadding * 1.75),
-                RichText(
-                  text: TextSpan(
-                    text: "Forgot password",
-                    recognizer: TapGestureRecognizer()..onTap = _forgotPassword,
-                    style: Theme.of(context).textTheme.subtitle1.copyWith(
-                        color: Colors.blue, fontWeight: FontWeight.w800),
-                  ),
+                          .headline5
+                          .copyWith(color: Colors.white),
+                    ),
+                    AgreementAndPolicy(),
+                    loginMethodsContainer,
+                    CustomDivider(),
+                    SizedBox(height: defaultPadding),
+                    // Email
+                    TextField(
+                      onChanged: (value) {
+                        _email = value;
+
+                        if (_emailError != null) {
+                          _emailError = null;
+                          setState(() {});
+                        }
+                      },
+                      style: Theme.of(context)
+                          .textTheme
+                          .headline6
+                          .copyWith(fontWeight: FontWeight.w300),
+                      focusNode: _userNameFN,
+                      decoration: InputDecoration(
+                        errorText: _emailError,
+                        errorStyle: Theme.of(context)
+                            .textTheme
+                            .subtitle2
+                            .copyWith(color: Colors.redAccent),
+                        contentPadding: EdgeInsets.only(bottom: 0),
+                        labelText: "Email",
+                        labelStyle: Theme.of(context)
+                            .textTheme
+                            .headline6
+                            .copyWith(
+                                color: _userNameFN.hasFocus
+                                    ? Colors.blue
+                                    : Colors.white60,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 20,
+                                height: 0.5),
+                      ),
+                    ),
+                    SizedBox(height: defaultPadding),
+                    // Password
+                    TextField(
+                      onChanged: (value) {
+                        _password = value;
+
+                        if (_passwordError != null) {
+                          _passwordError = null;
+                          setState(() {});
+                        }
+                      },
+                      obscureText: hidePassword,
+                      obscuringCharacter: '*',
+                      style: Theme.of(context)
+                          .textTheme
+                          .headline6
+                          .copyWith(fontWeight: FontWeight.w300),
+                      focusNode: _passwordFN,
+                      decoration: InputDecoration(
+                        errorText: _passwordError,
+                        contentPadding: EdgeInsets.only(bottom: 0),
+                        suffixIcon: InkWell(
+                          splashColor: Colors.white,
+                          onTap: () {
+                            hidePassword = !hidePassword;
+                            setState(() {});
+                          },
+                          child: Padding(
+                            padding: EdgeInsets.only(
+                                right: defaultPadding, top: defaultPadding),
+                            child: Icon(
+                              CupertinoIcons.eye,
+                              color:
+                                  hidePassword ? Colors.white60 : Colors.blue,
+                              size: 26,
+                            ),
+                          ),
+                        ),
+                        labelText: "Password",
+                        labelStyle: Theme.of(context)
+                            .textTheme
+                            .headline6
+                            .copyWith(
+                                color: _passwordFN.hasFocus
+                                    ? Colors.blue
+                                    : Colors.white60,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 20,
+                                height: 0.5),
+                      ),
+                    ),
+                    SizedBox(height: defaultPadding * 1.75),
+                    // Signup text
+                    RichText(
+                        text: TextSpan(children: [
+                      TextSpan(
+                          text: "New to Memmost? ",
+                          style: Theme.of(context)
+                              .textTheme
+                              .subtitle2
+                              .copyWith(color: Colors.white54)),
+                      TextSpan(
+                          text: "Sign up",
+                          recognizer: TapGestureRecognizer()..onTap = _signUp,
+                          style: Theme.of(context).textTheme.subtitle1.copyWith(
+                              color: Colors.blue, fontWeight: FontWeight.w800)),
+                    ])),
+                    SizedBox(height: defaultPadding * 1.75),
+                    RichText(
+                      text: TextSpan(
+                        text: "Forgot password",
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = _forgotPassword,
+                        style: Theme.of(context).textTheme.subtitle1.copyWith(
+                            color: Colors.blue, fontWeight: FontWeight.w800),
+                      ),
+                    ),
+                    SizedBox(height: 100),
+                  ],
                 ),
-                SizedBox(height: 100),
-              ],
+              ),
             ),
-          ),
+            if (_processing)
+              Center(
+                child: Container(
+                  width: 100,
+                  height: 100,
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+          ]),
         ),
       ),
-      floatingActionButton: InkWell(
-        onTap: _continue,
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: defaultPadding * 0.5),
-          margin: EdgeInsets.symmetric(horizontal: defaultPadding),
-          decoration: BoxDecoration(
-              color: Colors.blue,
-              borderRadius:
-                  BorderRadius.all(Radius.circular(defaultPadding * 2))),
-          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            Text(
-              "Continue",
-              style: Theme.of(context)
-                  .textTheme
-                  .headline6
-                  .copyWith(color: Colors.white),
-            ),
-          ]),
+      floatingActionButton: AbsorbPointer(
+        absorbing: _processing ? true : false,
+        child: InkWell(
+          onTap: _continue,
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: defaultPadding * 0.5),
+            margin: EdgeInsets.symmetric(horizontal: defaultPadding),
+            decoration: BoxDecoration(
+                color: Colors.blue,
+                borderRadius:
+                    BorderRadius.all(Radius.circular(defaultPadding * 2))),
+            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Text(
+                "Continue",
+                style: Theme.of(context)
+                    .textTheme
+                    .headline6
+                    .copyWith(color: Colors.white),
+              ),
+            ]),
+          ),
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
