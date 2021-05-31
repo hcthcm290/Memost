@@ -1,9 +1,13 @@
 import 'package:flutter/gestures.dart';
+import 'package:flutter_application_1/Screens/Login/Components/AgreementAndPolicy.dart';
+import 'package:flutter_application_1/Screens/Login/Components/LoginOptionCard.dart';
 import 'package:flutter_application_1/Services/UserCredentialService.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_application_1/constant.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+
+import 'Components/CustomDivider.dart';
 
 class LoginScreen extends StatefulWidget {
   LoginScreen({Key key}) : super(key: key);
@@ -93,6 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 loginMethodsContainer,
                 CustomDivider(),
                 SizedBox(height: defaultPadding),
+                // Username
                 TextField(
                   style: Theme.of(context)
                       .textTheme
@@ -111,6 +116,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 SizedBox(height: defaultPadding),
+                // Password
                 TextField(
                   obscureText: hidePassword,
                   obscuringCharacter: '*',
@@ -147,6 +153,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 SizedBox(height: defaultPadding * 1.75),
+                // Signup text
                 RichText(
                     text: TextSpan(children: [
                   TextSpan(
@@ -176,156 +183,26 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
       ),
-      floatingActionButton: Container(
-        padding: EdgeInsets.symmetric(vertical: defaultPadding * 0.5),
-        margin: EdgeInsets.symmetric(horizontal: defaultPadding),
-        decoration: BoxDecoration(
-            color: Colors.blue,
-            borderRadius:
-                BorderRadius.all(Radius.circular(defaultPadding * 2))),
-        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          Text(
-            "Continue",
-            style: Theme.of(context)
-                .textTheme
-                .headline6
-                .copyWith(color: Colors.white),
-          ),
-        ]),
+      floatingActionButton: InkWell(
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: defaultPadding * 0.5),
+          margin: EdgeInsets.symmetric(horizontal: defaultPadding),
+          decoration: BoxDecoration(
+              color: Colors.blue,
+              borderRadius:
+                  BorderRadius.all(Radius.circular(defaultPadding * 2))),
+          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Text(
+              "Continue",
+              style: Theme.of(context)
+                  .textTheme
+                  .headline6
+                  .copyWith(color: Colors.white),
+            ),
+          ]),
+        ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-    );
-  }
-}
-
-class CustomDivider extends StatelessWidget {
-  const CustomDivider({
-    Key key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      alignment: AlignmentDirectional.center,
-      children: [
-        Divider(
-          thickness: 0.5,
-          color: Colors.white30,
-        ),
-        Container(
-          width: 70,
-          color: Colors.black,
-          child: Center(
-            child: Text(
-              "OR",
-              style: Theme.of(context).textTheme.headline6.copyWith(
-                  color: Colors.white70,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w300),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class LoginOptionCard extends StatelessWidget {
-  const LoginOptionCard({
-    Key key,
-    this.onTap,
-    @required this.svgSource,
-    @required this.name,
-  }) : super(key: key);
-
-  final VoidCallback onTap;
-  final String svgSource, name;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: EdgeInsets.symmetric(vertical: defaultPadding * 0.5),
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(defaultPadding * 2)),
-            border: Border.all(color: Colors.blue, width: 1.2)),
-        child: Padding(
-          padding: EdgeInsets.all(defaultPadding * 0.75),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SvgPicture.asset(
-                svgSource,
-                height: 18,
-              ),
-              Spacer(),
-              Text(
-                "Continue with $name",
-                style: Theme.of(context)
-                    .textTheme
-                    .subtitle1
-                    .copyWith(color: Colors.blue, fontWeight: FontWeight.w900),
-              ),
-              Spacer()
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class AgreementAndPolicy extends StatelessWidget {
-  const AgreementAndPolicy({
-    Key key,
-  }) : super(key: key);
-
-  void _handleUserAgreementTap(context) {}
-
-  void _handlePrivacyPolicyTap(context) {}
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: defaultPadding),
-      child: RichText(
-          text: TextSpan(children: [
-        TextSpan(
-            text: "By continuing, you agree to our ",
-            style: Theme.of(context)
-                .textTheme
-                .subtitle2
-                .copyWith(color: Colors.white60, fontWeight: FontWeight.w300)),
-        TextSpan(
-            text: "User Agreement ",
-            style: Theme.of(context)
-                .textTheme
-                .subtitle2
-                .copyWith(color: Colors.blue, fontWeight: FontWeight.w300),
-            recognizer: TapGestureRecognizer()
-              ..onTap = () => _handleUserAgreementTap(context)),
-        TextSpan(
-            text: "and ",
-            style: Theme.of(context)
-                .textTheme
-                .subtitle2
-                .copyWith(color: Colors.white60, fontWeight: FontWeight.w300)),
-        TextSpan(
-            text: "Privacy Policy",
-            style: Theme.of(context)
-                .textTheme
-                .subtitle2
-                .copyWith(color: Colors.blue, fontWeight: FontWeight.w300),
-            recognizer: TapGestureRecognizer()
-              ..onTap = () => _handlePrivacyPolicyTap(context)),
-        TextSpan(
-            text: ".",
-            style: Theme.of(context)
-                .textTheme
-                .subtitle2
-                .copyWith(color: Colors.white60, fontWeight: FontWeight.w300)),
-      ])),
     );
   }
 }
