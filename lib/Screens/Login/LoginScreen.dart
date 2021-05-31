@@ -37,6 +37,8 @@ class _LoginScreenState extends State<LoginScreen> {
     print("forgot password");
   }
 
+  void _continue() {}
+
   FocusNode _userNameFN = FocusNode();
   FocusNode _passwordFN = FocusNode();
 
@@ -184,6 +186,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
       floatingActionButton: InkWell(
+        onTap: _continue,
         child: Container(
           padding: EdgeInsets.symmetric(vertical: defaultPadding * 0.5),
           margin: EdgeInsets.symmetric(horizontal: defaultPadding),
@@ -202,7 +205,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ]),
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }
