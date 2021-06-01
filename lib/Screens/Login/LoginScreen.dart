@@ -105,7 +105,7 @@ class _LoginScreenState extends State<LoginScreen> {
           LoginOptionCard(
             svgSource: "assets/logo/google_drive.svg",
             name: "Twitter",
-            onTap: _loginWithFacebook,
+            onTap: _loginWithTwitter,
           ),
         ],
       ),
@@ -164,7 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             .textTheme
                             .subtitle2
                             .copyWith(color: Colors.redAccent),
-                        contentPadding: EdgeInsets.only(bottom: 0),
+                        contentPadding: EdgeInsets.only(bottom: 10),
                         labelText: "Email",
                         labelStyle: Theme.of(context)
                             .textTheme
@@ -198,7 +198,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       focusNode: _passwordFN,
                       decoration: InputDecoration(
                         errorText: _passwordError,
-                        contentPadding: EdgeInsets.only(bottom: 0),
+                        contentPadding: EdgeInsets.only(bottom: 10),
                         suffixIcon: InkWell(
                           splashColor: Colors.white,
                           onTap: () {
@@ -273,24 +273,34 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       floatingActionButton: AbsorbPointer(
         absorbing: _processing ? true : false,
-        child: InkWell(
-          onTap: _continue,
-          child: Container(
-            padding: EdgeInsets.symmetric(vertical: defaultPadding * 0.5),
-            margin: EdgeInsets.symmetric(horizontal: defaultPadding),
-            decoration: BoxDecoration(
-                color: Colors.blue,
-                borderRadius:
-                    BorderRadius.all(Radius.circular(defaultPadding * 2))),
-            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-              Text(
-                "Continue",
-                style: Theme.of(context)
-                    .textTheme
-                    .headline6
-                    .copyWith(color: Colors.white),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: defaultPadding * 1.75),
+          child: Material(
+            color: Colors.blue,
+            borderRadius: BorderRadius.all(Radius.circular(defaultPadding * 2)),
+            child: InkWell(
+              borderRadius:
+                  BorderRadius.all(Radius.circular(defaultPadding * 2)),
+              onTap: _continue,
+              splashColor: Colors.blue[200],
+              child: Container(
+                padding: EdgeInsets.symmetric(vertical: defaultPadding * 0.5),
+                margin: EdgeInsets.symmetric(horizontal: defaultPadding),
+                decoration: BoxDecoration(
+                    borderRadius:
+                        BorderRadius.all(Radius.circular(defaultPadding * 2))),
+                child:
+                    Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                  Text(
+                    "Continue",
+                    style: Theme.of(context)
+                        .textTheme
+                        .headline6
+                        .copyWith(color: Colors.white),
+                  ),
+                ]),
               ),
-            ]),
+            ),
           ),
         ),
       ),

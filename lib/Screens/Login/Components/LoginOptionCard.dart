@@ -16,32 +16,38 @@ class LoginOptionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: EdgeInsets.symmetric(vertical: defaultPadding * 0.5),
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(defaultPadding * 2)),
-            border: Border.all(color: Colors.blue, width: 1.2)),
-        child: Padding(
-          padding: EdgeInsets.all(defaultPadding * 0.75),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SvgPicture.asset(
-                svgSource,
-                height: 18,
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: defaultPadding * 0.5),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.all(Radius.circular(defaultPadding * 2)),
+          child: Container(
+            //margin: EdgeInsets.symmetric(vertical: defaultPadding * 0.5),
+            decoration: BoxDecoration(
+                borderRadius:
+                    BorderRadius.all(Radius.circular(defaultPadding * 2)),
+                border: Border.all(color: Colors.blue, width: 1.2)),
+            child: Padding(
+              padding: EdgeInsets.all(defaultPadding * 0.75),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SvgPicture.asset(
+                    svgSource,
+                    height: 18,
+                  ),
+                  Spacer(),
+                  Text(
+                    "Continue with $name",
+                    style: Theme.of(context).textTheme.subtitle1.copyWith(
+                        color: Colors.blue, fontWeight: FontWeight.w900),
+                  ),
+                  Spacer()
+                ],
               ),
-              Spacer(),
-              Text(
-                "Continue with $name",
-                style: Theme.of(context)
-                    .textTheme
-                    .subtitle1
-                    .copyWith(color: Colors.blue, fontWeight: FontWeight.w900),
-              ),
-              Spacer()
-            ],
+            ),
           ),
         ),
       ),
