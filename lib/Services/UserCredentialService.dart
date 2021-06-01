@@ -1,12 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_application_1/Model/UserModel.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:logger/logger.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class UserCredentialService {
   CollectionReference _usersRef =
       FirebaseFirestore.instance.collection('users');
+
+  final googleSignIn = GoogleSignIn();
 
   Future<UserCredential> registerNewUserWithEmail(
       String email, String password) async {
@@ -68,5 +70,32 @@ class UserCredentialService {
     } on FirebaseAuthException catch (e) {
       return e.code;
     }
+  }
+
+  Future<String> loginWithGoogle() async {
+    try {
+      final user = await googleSignIn.signIn();
+
+      if (user == null) {
+        return null;
+      } else {
+        final googleAuth = await user.authentication;
+
+        final credential = GoogleAuthProvider.credential(
+            accessToken: googleAuth.accessToken, idToken: googleAuth.idToken);
+
+        final usrCredential =
+            await FirebaseAuth.instance.signInWithCredential(credential);
+
+        return usrCredential.user.uid;
+      }
+    } catch (error) {
+      print(error);
+    }
+  }
+
+  Future<void> logoutWithGoogle() async {
+    await googleSignIn.disconnect();
+    FirebaseAuth.instance.signOut();
   }
 }

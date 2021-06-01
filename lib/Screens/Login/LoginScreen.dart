@@ -6,7 +6,6 @@ import 'package:flutter_application_1/Services/UserCredentialService.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_application_1/constant.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import 'Components/CustomDivider.dart';
 
@@ -25,8 +24,10 @@ class _LoginScreenState extends State<LoginScreen> {
   String _passwordError = null;
   bool _processing = false;
 
-  void _loginWithGoogle() {
-    print("login with google");
+  void _loginWithGoogle() async {
+    String uid = await _userCredentialService.loginWithGoogle();
+    if (uid == null) return;
+    print("signed with google uid: $uid");
   }
 
   void _loginWithFacebook() {
@@ -46,8 +47,8 @@ class _LoginScreenState extends State<LoginScreen> {
     } on FirebaseAuthException catch (e) {}
   }
 
-  void _forgotPassword() {
-    print("forgot password");
+  void _forgotPassword() async {
+    await _userCredentialService.logoutWithGoogle();
   }
 
   void _continue() async {
