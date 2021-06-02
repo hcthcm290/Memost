@@ -87,10 +87,23 @@ class UserCredentialService {
         final usrCredential =
             await FirebaseAuth.instance.signInWithCredential(credential);
 
+        final qSnapshot = await _usersRef.doc(usrCredential.user.uid).get();
+
+        if (!qSnapshot.exists) {
+          final newUser = UserModel(
+            username: null,
+            email: usrCredential.user.email,
+            password: null,
+          );
+
+          await _usersRef.doc(usrCredential.user.uid).set(newUser.toMap());
+        }
+
         return usrCredential.user.uid;
       }
     } catch (error) {
       print(error);
+      return error;
     }
   }
 
