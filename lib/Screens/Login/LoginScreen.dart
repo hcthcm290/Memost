@@ -29,15 +29,21 @@ class _LoginScreenState extends State<LoginScreen> {
       _processing = true;
     });
     String uid = await _userCredentialService.loginWithGoogle();
-    if (uid == null) return;
-    print("signed with google uid: $uid");
+    if (uid != null) print("signed with google uid: $uid");
     setState(() {
       _processing = false;
     });
   }
 
-  void _loginWithFacebook() {
-    print("login with Facebook");
+  void _loginWithFacebook() async {
+    setState(() {
+      _processing = true;
+    });
+    String uid = await _userCredentialService.logInWithFacebook();
+    if (uid != null) print("signed with google uid: $uid");
+    setState(() {
+      _processing = false;
+    });
   }
 
   void _loginWithTwitter() {
@@ -54,7 +60,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _forgotPassword() async {
-    await _userCredentialService.logoutWithGoogle();
+    await _userCredentialService.logOutFacebook();
   }
 
   void _continue() async {
@@ -90,7 +96,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (user == null) {
         print("logout");
       } else {
-        print("log in");
+        print("log in: ${user.uid}");
       }
     });
 
