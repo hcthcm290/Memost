@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_application_1/Screens/Login/LoginScreen.dart';
+import 'package:flutter_application_1/Screens/MainScreen/MainScreen.dart';
 import 'package:flutter_application_1/constant.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -26,7 +27,7 @@ class MyApp extends StatelessWidget {
             .apply(bodyColor: Colors.white),
         canvasColor: secondaryColor,
       ),
-      home: LoginScreen(),
+      home: MainScreen(),
     );
   }
 }
