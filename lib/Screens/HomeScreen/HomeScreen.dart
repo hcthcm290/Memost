@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/Screens/HomeScreen/Components/HomeScreenAppBar.dart';
+import 'package:flutter_application_1/Screens/HomeScreen/Components/UserInfoDrawer.dart';
 
 class HomeScreen extends StatefulWidget {
   HomeScreen({Key key}) : super(key: key);
@@ -23,25 +24,18 @@ class _HomeScreenState extends State<HomeScreen> {
             _key.currentState.openDrawer();
           },
         ),
-        body: Container(),
-        drawer: Drawer(),
+        body: Row(
+          children: [
+            Expanded(child: Container(color: Colors.green)),
+            Expanded(child: Container(color: Colors.blue)),
+          ],
+        ),
+        drawer: UserInfoDrawer(
+          onTapClose: () {
+            Navigator.pop(context);
+          },
+        ),
       ),
-    );
-  }
-}
-
-class UserInfoDrawer extends StatefulWidget {
-  UserInfoDrawer({Key key}) : super(key: key);
-
-  @override
-  _UserInfoDrawerState createState() => _UserInfoDrawerState();
-}
-
-class _UserInfoDrawerState extends State<UserInfoDrawer> {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      child: Drawer(),
     );
   }
 }
