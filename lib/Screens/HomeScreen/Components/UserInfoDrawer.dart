@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/Model/UserModel.dart';
+import 'package:flutter_application_1/Screens/CreateGroupScreen/CreateGroupNameScreen.dart';
 import 'package:flutter_application_1/constant.dart';
 
 class UserInfoDrawer extends StatefulWidget {
@@ -18,7 +19,10 @@ class UserInfoDrawer extends StatefulWidget {
 class _UserInfoDrawerState extends State<UserInfoDrawer> {
   void onTapMyProfile() {}
 
-  void onTapCreateGroup() {}
+  void onTapCreateGroup(context) {
+    Navigator.push(context,
+        MaterialPageRoute(builder: (context) => CreateGroupNameScreen()));
+  }
 
   void onTapLogOut() {}
 
@@ -127,13 +131,13 @@ class _UserInfoDrawerState extends State<UserInfoDrawer> {
                       DrawerNavigateScreenCard(
                         title: "Create Group",
                         iconData: CupertinoIcons.person_3,
-                        onTap: onTapCreateGroup,
+                        onTap: () => onTapCreateGroup(context),
                       ),
                       Spacer(),
                       DrawerNavigateScreenCard(
                         title: "Log out",
                         iconData: CupertinoIcons.square_arrow_left,
-                        onTap: onTapCreateGroup,
+                        onTap: () => onTapCreateGroup(context),
                       )
                     ],
                   ),
