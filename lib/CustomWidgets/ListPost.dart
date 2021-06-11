@@ -272,26 +272,26 @@ class _PostUIState extends State<PostUI> {
                   height: 50,
                   color: Colors.green,
                   child: Center(
-                    child: Row(children: [
-                      Spacer(),
-                      Padding(
-                          padding: EdgeInsets.fromLTRB(0, 0, 0, 6),
-                          child: Icon(
-                            CupertinoIcons.share,
-                            color: Colors.white,
-                            size: this.footerIconSize,
-                          )),
-                      Spacer(),
-                      Padding(
-                          padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                          child: Text(
-                            'Share',
-                            style: TextStyle(
-                                fontSize: this.footerFontSize,
-                                color: Colors.white),
-                            textAlign: TextAlign.left,
-                          )),
-                      Spacer(),
+                      child: Row(children: [
+                    Spacer(),
+                    Padding(
+                        padding: EdgeInsets.fromLTRB(0, 0, 0, 6),
+                        child: Icon(
+                          CupertinoIcons.share,
+                          color: Colors.white,
+                          size: this.footerIconSize,
+                        )),
+                    Spacer(),
+                    Padding(
+                        padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                        child: Text(
+                          'Share',
+                          style: TextStyle(
+                              fontSize: this.footerFontSize,
+                              color: Colors.white),
+                          textAlign: TextAlign.left,
+                        )),
+                    Spacer(),
                   ])),
                 ),
               ),
@@ -309,14 +309,11 @@ class ListPostUI extends StatefulWidget {
 }
 
 class _ListPostUIState extends State<ListPostUI> {
-
   Group group = Group();
   Post post = Post();
 
   @override
   Widget build(BuildContext context) {
-
-    group.id = "001";
     group.name = "memes";
     group.avatar = "https://www.w3schools.com/w3css/img_nature.jpg";
 

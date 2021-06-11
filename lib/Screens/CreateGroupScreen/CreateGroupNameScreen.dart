@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_application_1/Screens/CreateGroupScreen/CreateGroupDescription.dart';
 import 'package:flutter_application_1/constant.dart';
 
 class CreateGroupNameScreen extends StatefulWidget {
@@ -54,6 +55,12 @@ class _CreateGroupNameScreenState extends State<CreateGroupNameScreen> {
 
     // if everything alright
     // navigate to the description screen
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => CreateGroupDescriptionScreen(
+                  groupName: textFieldController.text,
+                )));
   }
 
   bool _canNext() {

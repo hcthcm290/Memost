@@ -3,8 +3,6 @@ class Group {
   String owner;
   DateTime createdDate;
   String name;
-  String title;
-  String type;
   String description;
   String avatar;
   String wallPaper;
