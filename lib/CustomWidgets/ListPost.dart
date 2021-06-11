@@ -1,5 +1,6 @@
 import 'dart:ffi';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
@@ -29,6 +30,19 @@ class _PostUIState extends State<PostUI> {
 
   String _likeCount = '1.8K';
   String _commentCount = '35K';
+
+  ImageProvider _avatarImage;
+
+  _PostUIState() {}
+
+  @override
+  void initState() {
+    super.initState();
+
+    widget.group.getAvatar().then((value) => this.setState(() {
+          _avatarImage = value;
+        }));
+  }
 
   void _handleLovedTap() {
     if (_reactionType == ReactionType.loved) {
@@ -80,12 +94,15 @@ class _PostUIState extends State<PostUI> {
                 Container(
                   width: 50,
                   height: 50,
-                  decoration: new BoxDecoration(
-                      shape: BoxShape.circle,
-                      image: new DecorationImage(
-                          image:
-                              CachedNetworkImageProvider(widget.group.avatar),
-                          fit: BoxFit.cover)),
+                  decoration: _avatarImage != null
+                      ? new BoxDecoration(
+                          shape: BoxShape.circle,
+                          image: new DecorationImage(
+                            image: _avatarImage,
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      : null,
                 ),
                 Container(
                   width: 5,
@@ -109,7 +126,7 @@ class _PostUIState extends State<PostUI> {
                           child: GestureDetector(
                               onTap: this._handleGroupNameTap,
                               child: Text(
-                                "r/${widget.group.name}",
+                                "r/${widget.group?.name}",
                                 style: TextStyle(
                                     fontSize: 20, color: Colors.white),
                               ))),
@@ -120,7 +137,7 @@ class _PostUIState extends State<PostUI> {
                           children: [
                             GestureDetector(
                                 onTap: this._handleUsernameTap,
-                                child: Text("u/${widget.post.owner}",
+                                child: Text("u/${widget.post?.owner}",
                                     style: TextStyle(
                                         fontSize: 15, color: Colors.white))),
                             Spacer(
@@ -233,7 +250,7 @@ class _PostUIState extends State<PostUI> {
                 child: Container(
                   width: 80,
                   height: 50,
-                  color: Colors.pink,
+                  //color: Colors.pink,
                   child: Center(
                       child: Row(children: [
                     Spacer(
@@ -270,7 +287,7 @@ class _PostUIState extends State<PostUI> {
                 child: Container(
                   width: 80,
                   height: 50,
-                  color: Colors.green,
+                  //color: Colors.green,
                   child: Center(
                       child: Row(children: [
                     Spacer(),
@@ -304,38 +321,77 @@ class _PostUIState extends State<PostUI> {
 }
 
 class ListPostUI extends StatefulWidget {
+  final Group group;
+
+  ListPostUI({@required this.group});
+
   @override
   _ListPostUIState createState() => _ListPostUIState();
 }
 
 class _ListPostUIState extends State<ListPostUI> {
-  Group group = Group();
+  Group group() => widget.group;
   Post post = Post();
+
+  Widget itemBuilder(BuildContext context, int index) {
+    return PostUI(
+      post: post,
+      group: group(),
+    );
+  }
+
+  separatorBuilder(BuildContext context, int index) => Divider(
+        height: 10.0,
+      );
+
+  int itemCount = 10;
+  static int _computeActualChildCount(int itemCount) {
+    return max(0, itemCount * 2 - 1);
+  }
 
   @override
   Widget build(BuildContext context) {
-    group.name = "memes";
-    group.avatar = "https://www.w3schools.com/w3css/img_nature.jpg";
-
     post.id = "001";
     post.image = "https://www.w3schools.com/w3css/img_lights.jpg";
     post.owner = "basafish";
     post.title = "First post ever";
 
-    return Container(
-      child: ListView.separated(
-        padding: EdgeInsets.all(10),
-        itemCount: 10,
-        itemBuilder: (BuildContext context, int index) {
-          return PostUI(
-            post: post,
-            group: group,
-          );
+    return /*
+        Container(
+      child: Expanded(
+        flex: 100,
+        child: SizedBox(
+          height: 400,
+          width: 400,
+          child:
+              // */
+        SliverList(
+      delegate: SliverChildBuilderDelegate(
+        // Copied from ListView :)
+        (BuildContext context, int index) {
+          final int itemIndex = index ~/ 2;
+          Widget widget;
+          if (index.isEven) {
+            widget = itemBuilder(context, itemIndex);
+          } else {
+            widget = separatorBuilder(context, itemIndex);
+            assert(() {
+              if (widget == null) {
+                // ignore: dead_code
+                throw FlutterError('separatorBuilder cannot return null.');
+              }
+              return true;
+            }());
+          }
+          return widget;
         },
-        separatorBuilder: (BuildContext context, int index) => Divider(
-          height: 10.0,
-        ),
+        childCount: _computeActualChildCount(itemCount),
       ),
+
+      /*
+          ),
+        ),
+      ), // */
     );
   }
 }
