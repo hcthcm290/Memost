@@ -7,7 +7,8 @@ import 'package:flutter_application_1/Screens/CreateGroupScreen/CreateGroupNameS
 import 'package:flutter_application_1/constant.dart';
 
 class UserInfoDrawer extends StatefulWidget {
-  UserInfoDrawer({Key key, this.userModel, this.onTapClose}) : super(key: key);
+  UserInfoDrawer({Key key, this.userModel = null, this.onTapClose})
+      : super(key: key);
 
   UserModel userModel;
   final VoidCallback onTapClose;
@@ -26,13 +27,58 @@ class _UserInfoDrawerState extends State<UserInfoDrawer> {
 
   void onTapLogOut() {}
 
-  int heartValue = 132;
-  String ageValue = "2 y";
+  int get heartValue {
+    if (this.widget.userModel == null) {
+      return 0;
+    } else {
+      return int.tryParse(this.widget.userModel.stars);
+    }
+  }
+
+  String get ageValue {
+    if (this.widget.userModel == null) {
+      return "0 d";
+    } else {
+      Duration ageDuration =
+          DateTime.now().difference(this.widget.userModel.createdDate);
+
+      if (ageDuration.inDays >= 365) {
+        return "${ageDuration.inDays / 365} y";
+      } else if (ageDuration.inDays >= 30) {
+        return "${ageDuration.inDays / 30} m";
+      } else {
+        return "${ageDuration.inDays} d";
+      }
+    }
+  }
+
+  String getUserName() {
+    if (this.widget.userModel == null) {
+      return "Anonymous";
+    } else if (this.widget.userModel.username == null ||
+        this.widget.userModel.username == "") {
+      return "Anonymous";
+    } else {
+      return this.widget.userModel.username;
+    }
+  }
+
+  ImageProvider getAvatar() {
+    if (this.widget.userModel == null) {
+      return AssetImage("assets/logo/default-group-avatar.png");
+    } else if (this.widget.userModel.username == null ||
+        this.widget.userModel.username == "") {
+      return AssetImage("assets/logo/default-group-avatar.png");
+    } else {
+      return CachedNetworkImageProvider(this.widget.userModel.avatarUrl);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final drawerWidth = MediaQuery.of(context).size.width;
     print("drawer width: ${MediaQuery.of(context).size.width}");
+
     return Drawer(
         elevation: 0,
         child: Container(
@@ -76,15 +122,13 @@ class _UserInfoDrawerState extends State<UserInfoDrawer> {
                                 decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     image: DecorationImage(
-                                        image: CachedNetworkImageProvider(
-                                            "https://image.slidesharecdn.com/cabproposal6-18-2012-120618144552-phpapp02/95/cab-proposal-6-182012-1-728.jpg"),
-                                        fit: BoxFit.cover)),
+                                        image: getAvatar(), fit: BoxFit.cover)),
                               ),
                             ),
                             Padding(
                               padding: EdgeInsets.only(bottom: defaultPadding),
                               child: Text(
-                                "Username",
+                                getUserName(),
                                 style: Theme.of(context).textTheme.headline6,
                               ),
                             ),

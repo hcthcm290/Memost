@@ -5,9 +5,15 @@ class UserModel {
   DateTime createdDate;
   String stars;
   String avatarUrl;
+  String id;
 
-  UserModel({this.username, this.email, this.password, this.createdDate, this.stars}) {
-    if(this.createdDate == null) {
+  UserModel(
+      {this.username,
+      this.email,
+      this.password,
+      this.createdDate,
+      this.stars}) {
+    if (this.createdDate == null) {
       this.createdDate = DateTime.now();
     }
   }
