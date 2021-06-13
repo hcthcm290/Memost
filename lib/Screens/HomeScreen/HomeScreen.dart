@@ -23,7 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // TODO: implement initState
     super.initState();
 
-    FirebaseAuth.instance.authStateChanges().listen((user) async {
+    UserCredentialService.instance.onAuthChange.listen((user) async {
       userModel = await UserCredentialService.convertToUserModel(user);
 
       setState(() {});

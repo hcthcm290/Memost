@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -9,6 +10,23 @@ import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:http/http.dart' as http;
 
 class UserCredentialService {
+  final _onAuthChange = new StreamController<User>.broadcast(sync: true);
+  Stream<User> get onAuthChange => _onAuthChange.stream;
+
+  static UserCredentialService _instance = null;
+  static UserCredentialService get instance {
+    if (_instance == null) {
+      _instance = UserCredentialService._();
+      FirebaseAuth.instance.authStateChanges().listen((event) {
+        _instance._onAuthChange.add(event);
+      });
+    }
+
+    return _instance;
+  }
+
+  UserCredentialService._() {}
+
   static Stream<UserModel> get user {
     return FirebaseAuth.instance.authStateChanges().map((user) {
       convertToUserModel(user).then((value) {
@@ -96,6 +114,7 @@ class UserCredentialService {
       UserCredential userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
 
+      _onAuthChange.add(userCredential.user);
       return userCredential.user.uid;
     } on FirebaseAuthException catch (e) {
       return e.code;
@@ -121,12 +140,15 @@ class UserCredentialService {
 
         if (!qSnapshot.exists) {
           final newUser = UserModel(
-            username: null,
-            email: usrCredential.user.email,
-            password: null,
-          );
+              username: "basa google",
+              email: usrCredential.user.email,
+              password: null,
+              avatarUrl:
+                  "https://yt3.ggpht.com/ytc/AAUvwng30OdQa0xi_lXW1JiW4rY81E5l61WhjpKptAbNUw=s88-c-k-c0x00ffffff-no-rj");
 
           await _usersRef.doc(usrCredential.user.uid).set(newUser.toMap());
+
+          _onAuthChange.add(usrCredential.user);
         }
 
         return usrCredential.user.uid;
@@ -138,8 +160,14 @@ class UserCredentialService {
   }
 
   Future<void> logOut() async {
-    await logoutWithGoogle();
-    //await logOutFacebook();
+    try {
+      await logoutWithGoogle();
+    } catch (e) {}
+
+    try {
+      await logOutFacebook();
+    } catch (e) {}
+
     return;
   }
 
@@ -185,12 +213,14 @@ class UserCredentialService {
 
         if (!qSnapshot.exists) {
           final newUser = UserModel(
-            username: null,
-            email: profile["email"],
-            password: null,
-          );
-
+              username: "basa fb",
+              email: profile["email"],
+              password: null,
+              avatarUrl:
+                  "https://s3-symbol-logo.tradingview.com/facebook--big.svg");
           await _usersRef.doc(usrCredential.user.uid).set(newUser.toMap());
+
+          _onAuthChange.add(usrCredential.user);
         }
 
         return usrCredential.user.uid;

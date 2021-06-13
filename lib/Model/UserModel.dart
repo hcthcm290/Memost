@@ -12,7 +12,8 @@ class UserModel {
       this.email,
       this.password,
       this.createdDate,
-      this.stars}) {
+      this.stars,
+      this.avatarUrl}) {
     if (this.createdDate == null) {
       this.createdDate = DateTime.now();
     }

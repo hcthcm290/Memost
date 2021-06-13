@@ -17,7 +17,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  UserCredentialService _userCredentialService = new UserCredentialService();
+  UserCredentialService _userCredentialService = UserCredentialService.instance;
   String _email = "";
   String _password = "";
   String _emailError = null;
@@ -335,7 +335,7 @@ class RegisterScene extends StatefulWidget {
 class _RegisterSceneState extends State<RegisterScene> {
   String _email;
   String _password;
-  UserCredentialService _userCredentialService = UserCredentialService();
+  UserCredentialService _userCredentialService = UserCredentialService.instance;
   bool _passwordHidden = true;
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();

@@ -37,7 +37,7 @@ class _UserInfoDrawerState extends State<UserInfoDrawer> {
     this.widget.onTapClose();
     await Future.delayed(Duration(milliseconds: 500));
 
-    await UserCredentialService().logOut();
+    await UserCredentialService.instance.logOut();
   }
 
   void onTapLogIn() {

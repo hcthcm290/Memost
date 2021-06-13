@@ -51,7 +51,7 @@ class _TopicScreenState extends State<TopicScreen> {
   _TopicScreenState({UserCredentialService credentialService}) {
     _userCredentialService = credentialService;
     if (_userCredentialService == null)
-      _userCredentialService = UserCredentialService();
+      _userCredentialService = UserCredentialService.instance;
   }
 
   @override
