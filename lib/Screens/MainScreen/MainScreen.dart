@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/Model/UserModel.dart';
+import 'package:flutter_application_1/Screens/CreatePostScreens/LoginModal.dart';
 import 'package:flutter_application_1/Screens/HomeScreen/HomeScreen.dart';
 import 'package:provider/provider.dart';
 
@@ -43,7 +44,9 @@ class _MainScreenState extends State<MainScreen> {
           selectedItemColor: Colors.white,
           onTap: (index) {
             if (index == 2) {
-              // activate the add post modal
+              showModalBottomSheet(
+                  context: context,
+                  builder: (context) => Container(child: LoginModal()));
             } else {
               _currentIndex = index;
               switch (index) {

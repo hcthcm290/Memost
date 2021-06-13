@@ -18,6 +18,7 @@ class UserCredentialService {
     if (_instance == null) {
       _instance = UserCredentialService._();
       FirebaseAuth.instance.authStateChanges().listen((event) {
+        _instance._currentUser = event;
         _instance._onAuthChange.add(event);
       });
     }
@@ -26,6 +27,9 @@ class UserCredentialService {
   }
 
   UserCredentialService._() {}
+
+  User _currentUser = null;
+  User get currentUser => _currentUser;
 
   static Stream<UserModel> get user {
     return FirebaseAuth.instance.authStateChanges().map((user) {
