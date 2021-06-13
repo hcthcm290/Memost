@@ -9,9 +9,9 @@ import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:http/http.dart' as http;
 
 class UserCredentialService {
-  Stream<UserModel> get user {
+  static Stream<UserModel> get user {
     return FirebaseAuth.instance.authStateChanges().map((user) {
-      _convertToUserModel(user).then((value) {
+      convertToUserModel(user).then((value) {
         return value;
       });
 
@@ -19,18 +19,22 @@ class UserCredentialService {
     });
   }
 
-  Future<UserModel> _convertToUserModel(User user) async {
-    final userModelSnapshot = await _usersRef.doc(user.uid).get();
+  static Future<UserModel> convertToUserModel(User user) async {
+    if (user == null) return null;
+    try {
+      final userModelSnapshot = await _usersRef.doc(user.uid).get();
+      Map<String, dynamic> userModelData = userModelSnapshot.data();
 
-    Map<String, dynamic> userModelData = userModelSnapshot.data();
+      UserModel model = UserModel();
+      model.fromMap(userModelData);
 
-    UserModel model = UserModel();
-    model.fromMap(userModelData);
-
-    return model;
+      return model;
+    } catch (e) {
+      print(e);
+    }
   }
 
-  CollectionReference _usersRef =
+  static CollectionReference _usersRef =
       FirebaseFirestore.instance.collection('users');
 
   FacebookLogin facebookSignIn = new FacebookLogin();
@@ -133,9 +137,21 @@ class UserCredentialService {
     }
   }
 
+  Future<void> logOut() async {
+    await logoutWithGoogle();
+    //await logOutFacebook();
+    return;
+  }
+
   Future<void> logoutWithGoogle() async {
-    await googleSignIn.disconnect();
-    await FirebaseAuth.instance.signOut();
+    try {
+      await googleSignIn.disconnect();
+    } catch (e) {}
+
+    try {
+      await FirebaseAuth.instance.signOut();
+    } catch (e) {}
+    return;
   }
 
   Future<String> logInWithFacebook() async {

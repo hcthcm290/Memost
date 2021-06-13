@@ -29,7 +29,11 @@ class _LoginScreenState extends State<LoginScreen> {
       _processing = true;
     });
     String uid = await _userCredentialService.loginWithGoogle();
-    if (uid != null) print("signed with google uid: $uid");
+    if (uid != null) {
+      print("signed with google uid: $uid");
+
+      Navigator.pop(context);
+    }
     setState(() {
       _processing = false;
     });
@@ -40,7 +44,11 @@ class _LoginScreenState extends State<LoginScreen> {
       _processing = true;
     });
     String uid = await _userCredentialService.logInWithFacebook();
-    if (uid != null) print("signed with google uid: $uid");
+    if (uid != null) {
+      print("signed with google uid: $uid");
+
+      Navigator.pop(context);
+    }
     setState(() {
       _processing = false;
     });
@@ -52,15 +60,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _signUp() async {
     print("sign up");
-
-    try {
-      await FirebaseAuth.instance.signOut();
-      print("signed out");
-    } on FirebaseAuthException catch (e) {}
   }
 
   void _forgotPassword() async {
-    await _userCredentialService.logOutFacebook();
+    _userCredentialService.logoutWithGoogle();
   }
 
   void _continue() async {
@@ -80,6 +83,8 @@ class _LoginScreenState extends State<LoginScreen> {
     } else {
       _processing = false;
       print("login success with uid $result");
+
+      Navigator.pop(context);
     }
     _processing = false;
     setState(() {});
@@ -115,11 +120,6 @@ class _LoginScreenState extends State<LoginScreen> {
             name: "Facebook",
             onTap: _loginWithFacebook,
           ),
-          LoginOptionCard(
-            svgSource: "assets/logo/google_drive.svg",
-            name: "Twitter",
-            onTap: _loginWithTwitter,
-          ),
         ],
       ),
     );
@@ -132,8 +132,13 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() {});
     });
 
+    void onTapSignUp() {}
+
     return Scaffold(
-      body: SafeArea(
+      backgroundColor: Colors.black,
+      appBar: AppBar(backgroundColor: Colors.black, title: Text("")),
+      body: Padding(
+        padding: EdgeInsets.symmetric(horizontal: defaultPadding),
         child: Container(
           height: MediaQuery.of(context).size.height -
               MediaQuery.of(context).viewInsets.bottom,

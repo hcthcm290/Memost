@@ -4,7 +4,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/Model/UserModel.dart';
 import 'package:flutter_application_1/Screens/CreateGroupScreen/CreateGroupNameScreen.dart';
+import 'package:flutter_application_1/Screens/Login/LoginScreen.dart';
+import 'package:flutter_application_1/Services/UserCredentialService.dart';
 import 'package:flutter_application_1/constant.dart';
+import 'package:provider/provider.dart';
 
 class UserInfoDrawer extends StatefulWidget {
   UserInfoDrawer({Key key, this.userModel = null, this.onTapClose})
@@ -20,15 +23,32 @@ class UserInfoDrawer extends StatefulWidget {
 class _UserInfoDrawerState extends State<UserInfoDrawer> {
   void onTapMyProfile() {}
 
+  @override
+  void initState() {
+    super.initState();
+  }
+
   void onTapCreateGroup(context) {
     Navigator.push(context,
         MaterialPageRoute(builder: (context) => CreateGroupNameScreen()));
   }
 
-  void onTapLogOut() {}
+  void onTapLogOut() async {
+    this.widget.onTapClose();
+    await Future.delayed(Duration(milliseconds: 500));
+
+    await UserCredentialService().logOut();
+  }
+
+  void onTapLogIn() {
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => LoginScreen()));
+  }
 
   int get heartValue {
     if (this.widget.userModel == null) {
+      return 0;
+    } else if (this.widget.userModel.stars == null) {
       return 0;
     } else {
       return int.tryParse(this.widget.userModel.stars);
@@ -74,11 +94,7 @@ class _UserInfoDrawerState extends State<UserInfoDrawer> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final drawerWidth = MediaQuery.of(context).size.width;
-    print("drawer width: ${MediaQuery.of(context).size.width}");
-
+  Drawer getUserDrawer(double drawerWidth, BuildContext context) {
     return Drawer(
         elevation: 0,
         child: Container(
@@ -181,7 +197,7 @@ class _UserInfoDrawerState extends State<UserInfoDrawer> {
                       DrawerNavigateScreenCard(
                         title: "Log out",
                         iconData: CupertinoIcons.square_arrow_left,
-                        onTap: () => onTapCreateGroup(context),
+                        onTap: onTapLogOut,
                       )
                     ],
                   ),
@@ -190,6 +206,75 @@ class _UserInfoDrawerState extends State<UserInfoDrawer> {
             ),
           ),
         ));
+  }
+
+  Drawer getNoUserDrawer(BuildContext context) {
+    return Drawer(
+      elevation: 0,
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(10, 10, 15, 10),
+        child: Container(
+          color: secondaryColor,
+          child: Material(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(bottom: defaultPadding),
+                  child: InkWell(
+                    onTap: this.widget.onTapClose,
+                    splashFactory: InkRipple.splashFactory,
+                    child: Icon(
+                      CupertinoIcons.xmark,
+                      size: 24 * 1.25,
+                    ),
+                  ),
+                ),
+                Center(
+                  child: Icon(
+                    CupertinoIcons.person_circle_fill,
+                    color: Colors.white30,
+                    size: 70,
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.only(top: defaultPadding),
+                  child: Text(
+                    "Sign up to upvote the best meme, follow the trending, share your work and more!",
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.subtitle2,
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.only(top: defaultPadding),
+                  child: Divider(
+                    height: 0.8,
+                  ),
+                ),
+                DrawerNavigateScreenCard(
+                  iconData: CupertinoIcons.person_circle,
+                  title: "Sign up / Log in",
+                  onTap: onTapLogIn,
+                )
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final drawerWidth = MediaQuery.of(context).size.width;
+    print("drawer width: ${MediaQuery.of(context).size.width}");
+
+    if (this.widget.userModel == null) {
+      return getNoUserDrawer(context);
+    } else {
+      return getUserDrawer(drawerWidth, context);
+    }
+    //return getUserDrawer(drawerWidth, context);
   }
 }
 

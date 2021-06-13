@@ -1,6 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/Model/UserModel.dart';
+import 'package:flutter_application_1/Services/UserCredentialService.dart';
 import 'package:flutter_application_1/constant.dart';
 
 class HomeScreenAppBar extends StatefulWidget with PreferredSizeWidget {
@@ -20,6 +23,27 @@ class HomeScreenAppBar extends StatefulWidget with PreferredSizeWidget {
 
 class _HomeScreenAppBarState extends State<HomeScreenAppBar> {
   int _currentIndex = 0;
+  UserModel userModel = null;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    FirebaseAuth.instance.authStateChanges().listen((user) async {
+      userModel = await UserCredentialService.convertToUserModel(user);
+      setState(() {});
+    });
+  }
+
+  ImageProvider getAvatar() {
+    if (userModel == null ||
+        userModel.avatarUrl == null ||
+        userModel.avatarUrl == "") {
+      return AssetImage("assets/logo/default-group-avatar.png");
+    } else {
+      return CachedNetworkImageProvider(userModel.avatarUrl);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,10 +68,8 @@ class _HomeScreenAppBarState extends State<HomeScreenAppBar> {
                 height: 35,
                 decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    image: DecorationImage(
-                        image: CachedNetworkImageProvider(
-                            "https://image.slidesharecdn.com/cabproposal6-18-2012-120618144552-phpapp02/95/cab-proposal-6-182012-1-728.jpg"),
-                        fit: BoxFit.cover)),
+                    image:
+                        DecorationImage(image: getAvatar(), fit: BoxFit.cover)),
               ),
             ),
           ),

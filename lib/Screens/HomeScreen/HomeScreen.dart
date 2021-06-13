@@ -1,6 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/Model/UserModel.dart';
 import 'package:flutter_application_1/Screens/HomeScreen/Components/HomeScreenAppBar.dart';
 import 'package:flutter_application_1/Screens/HomeScreen/Components/UserInfoDrawer.dart';
+import 'package:flutter_application_1/Services/UserCredentialService.dart';
 
 class HomeScreen extends StatefulWidget {
   HomeScreen({Key key}) : super(key: key);
@@ -12,8 +15,24 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   GlobalKey<ScaffoldState> _key = GlobalKey();
 
+  UserModel userModel = null;
+  BuildContext _context;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    FirebaseAuth.instance.authStateChanges().listen((user) async {
+      userModel = await UserCredentialService.convertToUserModel(user);
+
+      setState(() {});
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    _context = context;
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.black87,
@@ -31,6 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         drawer: UserInfoDrawer(
+          userModel: this.userModel,
           onTapClose: () {
             Navigator.pop(context);
           },
