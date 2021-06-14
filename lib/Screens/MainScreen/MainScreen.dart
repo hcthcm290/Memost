@@ -5,7 +5,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/Model/UserModel.dart';
 import 'package:flutter_application_1/Screens/CreatePostScreens/LoginModal.dart';
+import 'package:flutter_application_1/Screens/CreatePostScreens/UploadTypeModal.dart';
 import 'package:flutter_application_1/Screens/HomeScreen/HomeScreen.dart';
+import 'package:flutter_application_1/Services/UserCredentialService.dart';
 import 'package:provider/provider.dart';
 
 class MainScreen extends StatefulWidget {
@@ -44,9 +46,14 @@ class _MainScreenState extends State<MainScreen> {
           selectedItemColor: Colors.white,
           onTap: (index) {
             if (index == 2) {
-              showModalBottomSheet(
-                  context: context,
-                  builder: (context) => Container(child: LoginModal()));
+              if (UserCredentialService.instance.currentUser == null) {
+                showModalBottomSheet(
+                    context: context,
+                    builder: (context) => Container(child: LoginModal()));
+              } else {
+                showModalBottomSheet(
+                    context: context, builder: (context) => UploadTypeModal());
+              }
             } else {
               _currentIndex = index;
               switch (index) {
