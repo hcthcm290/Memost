@@ -9,13 +9,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/Model/Post.dart';
 import 'package:flutter_application_1/Model/Group.dart';
 import 'package:flutter_application_1/Model/Reaction_Type.dart';
+import 'package:flutter_application_1/constant.dart';
 
 class PostUI extends StatefulWidget {
   final Post post;
-  final Group group;
-
-  PostUI({Key key, @required this.post, @required this.group})
-      : super(key: key);
+  PostUI({Key key, @required this.post}) : super(key: key);
 
   @override
   _PostUIState createState() => _PostUIState();
@@ -26,7 +24,7 @@ enum ReactionType { none, loved, notloved }
 class _PostUIState extends State<PostUI> {
   ReactionType _reactionType = ReactionType.none;
   double footerFontSize = 12;
-  double footerIconSize = 25;
+  double footerIconSize = 27;
 
   String _likeCount = '1.8K';
   String _commentCount = '35K';
@@ -39,9 +37,9 @@ class _PostUIState extends State<PostUI> {
   void initState() {
     super.initState();
 
-    widget.group.getAvatar().then((value) => this.setState(() {
-          _avatarImage = value;
-        }));
+    // widget.group.getAvatar().then((value) => this.setState(() {
+    //       _avatarImage = value;
+    //     }));
   }
 
   void _handleLovedTap() {
@@ -81,106 +79,104 @@ class _PostUIState extends State<PostUI> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
-      color: Color.fromARGB(255, 0, 0, 0),
+      padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+      color: Color.fromARGB(255, 5, 5, 5),
       child: Column(
         children: [
           // Header
-          IntrinsicHeight(
-            child: Row(
-              children: [
-                // Avatar
-                /// this is a way for more customize circle avatar of a post //
-                Container(
-                  width: 50,
-                  height: 50,
-                  decoration: _avatarImage != null
-                      ? new BoxDecoration(
-                          shape: BoxShape.circle,
-                          image: new DecorationImage(
-                            image: _avatarImage,
-                            fit: BoxFit.cover,
-                          ),
-                        )
-                      : null,
-                ),
-                Container(
-                  width: 5,
-                  height: 50,
-                  color: Colors.black,
-                ),
+          Padding(
+            padding: EdgeInsets.only(left: defaultPadding * 0.75),
+            child: IntrinsicHeight(
+              child: Row(
+                children: [
+                  // Avatar
+                  /// this is a way for more customize circle avatar of a post //
+                  Container(
+                      width: 25,
+                      height: 25,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.rectangle,
+                        image: new DecorationImage(
+                          image: _avatarImage != null
+                              ? _avatarImage
+                              : Image.asset(
+                                      "assets/logo/default-group-avatar.png")
+                                  .image,
+                          fit: BoxFit.cover,
+                        ),
+                      )),
 
-                // the simple round avatar
-                // ClipRRect(
-                //   borderRadius: BorderRadius.circular(50),
-                //   child: CachedNetworkImage(imageUrl: widget.group.avatar, width: 50, height: 50, fit: BoxFit.fill,),
-                // ),
+                  // the simple round avatar
+                  // ClipRRect(
+                  //   borderRadius: BorderRadius.circular(50),
+                  //   child: CachedNetworkImage(imageUrl: widget.group.avatar, width: 50, height: 50, fit: BoxFit.fill,),
+                  // ),
 
-                // Title
-                Expanded(
-                  child: Column(
-                    children: [
-                      Spacer(),
-                      Align(
-                          alignment: Alignment.topLeft,
-                          child: GestureDetector(
-                              onTap: this._handleGroupNameTap,
-                              child: Text(
-                                "r/${widget.group?.name}",
-                                style: TextStyle(
-                                    fontSize: 20, color: Colors.white),
-                              ))),
-                      Spacer(),
-                      Align(
-                        alignment: Alignment.topLeft,
+                  // Title
+                  Expanded(
+                    child: Padding(
+                      padding:
+                          EdgeInsets.only(left: defaultPadding * 0.5, top: 5),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
                         child: Row(
                           children: [
                             GestureDetector(
                                 onTap: this._handleUsernameTap,
-                                child: Text("u/${widget.post?.owner}",
-                                    style: TextStyle(
-                                        fontSize: 15, color: Colors.white))),
-                            Spacer(
-                              flex: 1,
+                                child: Text("${widget.post?.owner}",
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyText2
+                                        .copyWith(
+                                            color: Colors.white54,
+                                            fontSize: 12))),
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 5),
+                              child: Icon(
+                                CupertinoIcons.circle_fill,
+                                size: 5,
+                                color: Colors.white54,
+                              ),
                             ),
-                            //Icon(Icons.album, color: Colors.white, size: 10,),
-                            Spacer(
-                              flex: 1,
-                            ),
-                            Text("3 Days ago",
-                                style: TextStyle(
-                                    fontSize: 15, color: Colors.white))
+                            Text("3d",
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyText2
+                                    .copyWith(color: Colors.white54))
                           ],
                         ),
                       ),
-                      Spacer(),
-                    ],
+                    ),
                   ),
-                ),
-
-                Container(
-                  width: 15,
-                  height: 50,
-                  color: Colors.black,
-                ),
-
-                // 3 Dot
-                GestureDetector(
-                    onTap: this._handle3DotTap,
-                    child: Icon(
-                      Icons.more_horiz,
-                      size: 40,
-                      color: Colors.white,
-                    ))
-              ],
+                  // 3 Dot
+                  Padding(
+                    padding: EdgeInsets.only(right: defaultPadding * 0.75),
+                    child: Align(
+                      alignment: Alignment.bottomLeft,
+                      child: GestureDetector(
+                          onTap: this._handle3DotTap,
+                          child: Icon(
+                            Icons.more_horiz,
+                            size: 35,
+                            color: Colors.white54,
+                          )),
+                    ),
+                  )
+                ],
+              ),
             ),
           ),
           // Title
           Padding(
-            padding: EdgeInsets.fromLTRB(0, 10, 0, 10),
+            padding: EdgeInsets.fromLTRB(defaultPadding * 0.75, 0, 0, 5),
             child: Align(
-                child: Text(widget.post.title,
-                    style: TextStyle(fontSize: 18, color: Colors.white)),
+                child: Text(
+                  widget.post.title,
+                  style: Theme.of(context)
+                      .textTheme
+                      .subtitle1
+                      .copyWith(color: Colors.white),
+                ),
                 alignment: Alignment.centerLeft),
           ),
           // Image
@@ -189,130 +185,117 @@ class _PostUIState extends State<PostUI> {
             placeholder: (context, url) => CircularProgressIndicator(),
           ),
           // Footer
-          Row(
-            children: [
-              // Love && NotLove
-              Container(
-                width: 110,
-                height: 50,
-                //color: Colors.blue,
-                child: Row(
-                  children: [
-                    GestureDetector(
-                      onTap: _handleLovedTap,
-                      child: Icon(
-                        _reactionType == ReactionType.loved
-                            ? CupertinoIcons.heart_fill
-                            : CupertinoIcons.heart,
-                        size: this.footerIconSize,
-                        color: _reactionType == ReactionType.loved
-                            ? Colors.redAccent
-                            : Colors.white,
-                      ),
-                    ),
-                    Spacer(
-                      flex: 1,
-                    ),
-                    Text(this._likeCount,
-                        style: TextStyle(
-                            fontSize: this.footerFontSize,
-                            fontWeight: FontWeight.w800,
-                            color: _reactionType == ReactionType.none
-                                ? Colors.white
-                                : _reactionType == ReactionType.loved
-                                    ? Colors.redAccent
-                                    : Colors.blue)),
-                    Spacer(
-                      flex: 1,
-                    ),
-                    GestureDetector(
-                      onTap: _handleNotLoveTap,
-                      child: Icon(
-                        _reactionType == ReactionType.notloved
-                            ? CupertinoIcons.heart_slash_fill
-                            : CupertinoIcons.heart_slash,
-                        size: this.footerIconSize,
-                        color: _reactionType == ReactionType.notloved
-                            ? Colors.blue
-                            : Colors.white,
-                      ),
-                    ),
-                    Spacer(flex: 10)
-                  ],
+          Padding(
+            padding: EdgeInsets.only(
+                top: defaultPadding * 0.5,
+                bottom: defaultPadding * 0.5,
+                left: defaultPadding * 0.5),
+            child: Row(
+              children: [
+                Spacer(),
+
+                // Love && NotLove
+                GestureDetector(
+                  onTap: _handleLovedTap,
+                  child: Icon(
+                    _reactionType == ReactionType.loved
+                        ? CupertinoIcons.heart_circle_fill
+                        : CupertinoIcons.heart_circle,
+                    size: this.footerIconSize * 1.2,
+                    color: _reactionType == ReactionType.loved
+                        ? Colors.redAccent.withAlpha(200)
+                        : Colors.white54,
+                  ),
                 ),
-              ),
-              Spacer(
-                flex: 1,
-              ),
-              // Comment
-              GestureDetector(
-                onTap: this._handleCommentTap,
-                child: Container(
-                  width: 80,
-                  height: 50,
-                  //color: Colors.pink,
+                Padding(
+                  padding: EdgeInsets.only(left: defaultPadding),
+                  child: Text(this._likeCount,
+                      style: TextStyle(
+                          fontSize: this.footerFontSize,
+                          letterSpacing: 1.2,
+                          wordSpacing: 2,
+                          fontWeight: FontWeight.w900,
+                          color: _reactionType == ReactionType.none
+                              ? Colors.white54
+                              : _reactionType == ReactionType.loved
+                                  ? Colors.redAccent.withAlpha(200)
+                                  : Colors.blue.withAlpha(200))),
+                ),
+                Padding(
+                  padding: EdgeInsets.only(left: defaultPadding),
+                  child: GestureDetector(
+                    onTap: _handleNotLoveTap,
+                    child: Icon(
+                      _reactionType == ReactionType.notloved
+                          ? CupertinoIcons.heart_slash_circle_fill
+                          : CupertinoIcons.heart_slash_circle,
+                      size: this.footerIconSize * 1.2,
+                      color: _reactionType == ReactionType.notloved
+                          ? Colors.blue.withAlpha(200)
+                          : Colors.white54,
+                    ),
+                  ),
+                ),
+                Spacer(
+                  flex: 2,
+                ),
+
+                // Comment
+                GestureDetector(
+                  onTap: this._handleCommentTap,
                   child: Center(
                       child: Row(children: [
-                    Spacer(
-                      flex: 3,
-                    ),
                     Icon(
-                      CupertinoIcons.bubble_left,
-                      color: Colors.white,
-                      size: this.footerIconSize,
+                      CupertinoIcons.bubble_left_fill,
+                      color: Colors.white54,
+                      size: this.footerIconSize * 0.8,
                     ),
-                    Spacer(flex: 1),
                     Padding(
-                        padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                        padding:
+                            EdgeInsets.fromLTRB(defaultPadding * 0.5, 0, 0, 0),
                         child: Text(
                           this._commentCount,
                           style: TextStyle(
                               fontSize: this.footerFontSize,
-                              color: Colors.white,
+                              color: Colors.white54,
                               fontWeight: FontWeight.w800),
                           textAlign: TextAlign.left,
                         )),
-                    Spacer(
-                      flex: 3,
-                    ),
                   ])),
                 ),
-              ),
-              Spacer(
-                flex: 10,
-              ),
-              // Share
-              GestureDetector(
-                onTap: this._handleShareTap,
-                child: Container(
-                  width: 80,
-                  height: 50,
-                  //color: Colors.green,
-                  child: Center(
-                      child: Row(children: [
-                    Spacer(),
-                    Padding(
-                        padding: EdgeInsets.fromLTRB(0, 0, 0, 6),
-                        child: Icon(
-                          CupertinoIcons.share,
-                          color: Colors.white,
-                          size: this.footerIconSize,
-                        )),
-                    Spacer(),
-                    Padding(
-                        padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                        child: Text(
-                          'Share',
-                          style: TextStyle(
-                              fontSize: this.footerFontSize,
-                              color: Colors.white),
-                          textAlign: TextAlign.left,
-                        )),
-                    Spacer(),
-                  ])),
+                Spacer(
+                  flex: 2,
                 ),
-              ),
-            ],
+                // Share
+                GestureDetector(
+                  onTap: this._handleShareTap,
+                  child: Container(
+                    //color: Colors.green,
+                    child: Center(
+                        child: Row(children: [
+                      Padding(
+                          padding: EdgeInsets.fromLTRB(0, 0, 0, 6),
+                          child: Icon(
+                            CupertinoIcons.share_solid,
+                            color: Colors.white54,
+                            size: this.footerIconSize * 0.75,
+                          )),
+                      Padding(
+                          padding: EdgeInsets.fromLTRB(
+                              defaultPadding * 0.5, 0, 0, 0),
+                          child: Text(
+                            'Share',
+                            style: TextStyle(
+                                fontSize: this.footerFontSize,
+                                color: Colors.white54),
+                            textAlign: TextAlign.left,
+                          )),
+                    ])),
+                  ),
+                ),
+                Spacer(),
+              ],
+            ),
           )
         ],
       ),
@@ -336,7 +319,6 @@ class _ListPostUIState extends State<ListPostUI> {
   Widget itemBuilder(BuildContext context, int index) {
     return PostUI(
       post: post,
-      group: group(),
     );
   }
 

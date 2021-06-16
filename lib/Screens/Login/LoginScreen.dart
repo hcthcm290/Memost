@@ -28,15 +28,22 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       _processing = true;
     });
-    String uid = await _userCredentialService.loginWithGoogle();
-    if (uid != null) {
-      print("signed with google uid: $uid");
+    try {
+      String uid = await _userCredentialService.loginWithGoogle();
+      if (uid != null) {
+        print("signed with google uid: $uid");
 
-      Navigator.pop(context);
+        Navigator.pop(context);
+      }
+      setState(() {
+        _processing = false;
+      });
+    } catch (e) {
+      print(e);
+      setState(() {
+        _processing = false;
+      });
     }
-    setState(() {
-      _processing = false;
-    });
   }
 
   void _loginWithFacebook() async {
