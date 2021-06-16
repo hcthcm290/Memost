@@ -13,10 +13,11 @@ class Group {
   String owner;
   DateTime createdDate;
   String name;
-  String type;
   String description;
   bool isDeleted;
+  String type;
   Group();
+
   factory Group.fromJson(Map<String, dynamic> json) {
     Group a = new Group();
     if (json == null) return a;
@@ -31,6 +32,7 @@ class Group {
     a.isDeleted = json["isDeleted"];
     return a;
   }
+
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
     json["id"] = id;

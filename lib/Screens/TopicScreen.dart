@@ -51,7 +51,7 @@ class _TopicScreenState extends State<TopicScreen> {
   _TopicScreenState({UserCredentialService credentialService}) {
     _userCredentialService = credentialService;
     if (_userCredentialService == null)
-      _userCredentialService = UserCredentialService();
+      _userCredentialService = UserCredentialService.instance;
   }
 
   @override
@@ -131,85 +131,85 @@ class _TopicScreenState extends State<TopicScreen> {
 
   Widget topBar() {
     return SliverAppBar(
-      titleSpacing: 0,
+      backgroundColor: Colors.red,
+      titleSpacing: 50,
       expandedHeight: 220,
-      flexibleSpace: Container(
-        height: 220,
-        child: Stack(
-          alignment: AlignmentDirectional.bottomCenter,
-          children: [
-            Flexible(
-              child: Container(
-                margin: EdgeInsets.fromLTRB(0, 0, 0, 70),
-                child: Image(
-                  fit: BoxFit.fitHeight,
-                  image: _getBigImage(),
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white10,
-                ),
-                height: 150,
-                alignment: Alignment.center,
+      pinned: true,
+      title: Text("Group screen"),
+      flexibleSpace: Stack(
+        alignment: AlignmentDirectional.bottomCenter,
+        children: [
+          Flexible(
+            child: Container(
+              margin: EdgeInsets.fromLTRB(0, 0, 0, 70),
+              child: Image(
+                fit: BoxFit.fitHeight,
+                image: _getBigImage(),
               ),
-            ),
-            Container(
-              margin: EdgeInsets.fromLTRB(0, 0, 0, 60),
-              child: Divider(
-                height: 10.0,
-                thickness: 10,
+              decoration: BoxDecoration(
+                color: Colors.white10,
               ),
+              height: 150,
+              alignment: Alignment.center,
             ),
-            Container(
-              margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
-              height: 80,
-              child: Row(
-                children: [
-                  Container(
-                    margin: EdgeInsets.fromLTRB(10, 0, 0, 0),
-                    child: CircleAvatar(
-                      backgroundImage: _getSmallImage(),
-                      radius: 35,
-                    ),
+          ),
+          Container(
+            margin: EdgeInsets.fromLTRB(0, 0, 0, 60),
+            child: Divider(
+              height: 10.0,
+              thickness: 10,
+            ),
+          ),
+          Container(
+            margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
+            height: 80,
+            child: Row(
+              children: [
+                Container(
+                  margin: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                  child: CircleAvatar(
+                    backgroundImage: _getSmallImage(),
+                    radius: 35,
                   ),
-                  Spacer(),
-                  Flexible(
-                    flex: 20,
-                    child: Container(
-                      padding: EdgeInsets.fromLTRB(10, 20, 0, 10),
-                      child: AutoSizeText(
-                        "r/" + _getTopicName(),
-                        style: TextStyle(
-                          fontSize: 50,
-                          color: Color.fromARGB(255, 255, 255, 255),
-                        ),
-                        maxLines: 2,
-                      ),
-                    ),
-                  ),
-                  Spacer(flex: 5),
-                  Container(
+                ),
+                Spacer(),
+                Flexible(
+                  flex: 20,
+                  child: Container(
                     padding: EdgeInsets.fromLTRB(10, 20, 0, 10),
-                    child: ElevatedButton(
-                      child: Text(
-                        _subButtonName(),
-                        style: TextStyle(
-                          fontSize: 20,
-                          color: Color.fromARGB(255, 255, 255, 255),
-                        ),
+                    child: AutoSizeText(
+                      "r/" + _getTopicName(),
+                      style: TextStyle(
+                        fontSize: 50,
+                        color: Color.fromARGB(255, 255, 255, 255),
                       ),
-                      onPressed: _onSubButtonPressed,
+                      maxLines: 2,
                     ),
                   ),
-                  Flexible(
-                    child: Container(
-                      width: 10,
+                ),
+                Spacer(flex: 5),
+                Container(
+                  padding: EdgeInsets.fromLTRB(10, 20, 0, 10),
+                  child: ElevatedButton(
+                    child: Text(
+                      _subButtonName(),
+                      style: TextStyle(
+                        fontSize: 20,
+                        color: Color.fromARGB(255, 255, 255, 255),
+                      ),
                     ),
-                  )
-                ],
-              ),
+                    onPressed: _onSubButtonPressed,
+                  ),
+                ),
+                Flexible(
+                  child: Container(
+                    width: 10,
+                  ),
+                )
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
