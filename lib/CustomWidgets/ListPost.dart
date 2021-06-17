@@ -9,11 +9,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/Model/Post.dart';
 import 'package:flutter_application_1/Model/Group.dart';
 import 'package:flutter_application_1/Model/Reaction_Type.dart';
+import 'package:flutter_application_1/Screens/DetailPostScreen/DetailPostScreen.dart';
 import 'package:flutter_application_1/constant.dart';
 
 class PostUI extends StatefulWidget {
   final Post post;
-  PostUI({Key key, @required this.post}) : super(key: key);
+  PostUI({
+    Key key,
+    @required this.post,
+    this.canNavigateToDetail = true,
+  }) : super(key: key);
+
+  final bool canNavigateToDetail;
 
   @override
   _PostUIState createState() => _PostUIState();
@@ -70,11 +77,20 @@ class _PostUIState extends State<PostUI> {
 
   void _handleCommentTap() {}
 
-  void _handleGroupNameTap() {}
-
   void _handleUsernameTap() {}
 
   void _handle3DotTap() {}
+
+  void _handleTitleTap() {
+    if (widget.canNavigateToDetail) {
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => DetailPostScreen(
+                    postUI: this.widget,
+                  )));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -112,7 +128,7 @@ class _PostUIState extends State<PostUI> {
                   //   child: CachedNetworkImage(imageUrl: widget.group.avatar, width: 50, height: 50, fit: BoxFit.fill,),
                   // ),
 
-                  // Title
+                  // Owner name
                   Expanded(
                     child: Padding(
                       padding:
@@ -167,17 +183,20 @@ class _PostUIState extends State<PostUI> {
             ),
           ),
           // Title
-          Padding(
-            padding: EdgeInsets.fromLTRB(defaultPadding * 0.75, 0, 0, 5),
-            child: Align(
-                child: Text(
-                  widget.post.title,
-                  style: Theme.of(context)
-                      .textTheme
-                      .subtitle1
-                      .copyWith(color: Colors.white),
-                ),
-                alignment: Alignment.centerLeft),
+          GestureDetector(
+            onTap: _handleTitleTap,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(defaultPadding * 0.75, 0, 0, 5),
+              child: Align(
+                  child: Text(
+                    widget.post.title,
+                    style: Theme.of(context)
+                        .textTheme
+                        .subtitle1
+                        .copyWith(color: Colors.white),
+                  ),
+                  alignment: Alignment.centerLeft),
+            ),
           ),
           // Image
           CachedNetworkImage(
