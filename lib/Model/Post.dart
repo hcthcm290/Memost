@@ -8,7 +8,6 @@ class Post {
   String id;
   String owner;
   DateTime createdDate;
-  String group;
   String title;
   String isDeleted;
   @Deprecated("Use Get/SetImage instead")
@@ -19,7 +18,6 @@ class Post {
     if (json == null) return a;
     a.id = json["id"];
     a.owner = json["owner"];
-    a.group = json["group"];
     a.title = json["title"];
     try {
       a.createdDate = DateTime.parse(json["createdDate"]);
@@ -31,7 +29,6 @@ class Post {
     Map<String, dynamic> json = {};
     json["id"] = id;
     json["owner"] = owner;
-    json["group"] = group;
     json["title"] = title;
     json["createdDate"] = createdDate?.toString();
     json["isDeleted"] = isDeleted;
