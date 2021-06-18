@@ -10,8 +10,7 @@ import 'package:flutter_application_1/constant.dart';
 import 'package:provider/provider.dart';
 
 class UserInfoDrawer extends StatefulWidget {
-  UserInfoDrawer({Key key, this.userModel = null, this.onTapClose})
-      : super(key: key);
+  UserInfoDrawer({Key key, this.userModel, this.onTapClose}) : super(key: key);
 
   UserModel userModel;
   final VoidCallback onTapClose;

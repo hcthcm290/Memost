@@ -1,7 +1,9 @@
 import 'dart:developer';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart' as db;
+import 'package:flutter/services.dart';
 import 'package:flutter_application_1/CustomWidgets/ListPost.dart';
 import 'package:flutter_application_1/Model/Group.dart';
 import 'package:flutter_application_1/Services/UserCredentialService.dart';
@@ -63,13 +65,19 @@ class _TopicScreenState extends State<TopicScreen> {
         .then((value) {
       setState(() {
         group = Group.fromJson(value.data());
-
+        /*
         group.getAvatar().then((value) {
           setState(() {
             _avatar = value;
           });
+          rootBundle.load("images/lake.jpg").then((value) {
+            Uint8List result = value.buffer.asUint8List();
+            group.setAvatar(result);
+            group.setBackground(result);
+          });
         });
-        /*
+        // */
+        //*
         group.getBackground().then((value) {
           setState(() {
             _background = value;
@@ -87,7 +95,10 @@ class _TopicScreenState extends State<TopicScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   ImageProvider _getBigImage() {
-    return AssetImage("images/lake.jpg");
+    if (_background != null)
+      return _background;
+    else
+      return AssetImage("images/lake.jpg");
   }
 
   ImageProvider _getSmallImage() {

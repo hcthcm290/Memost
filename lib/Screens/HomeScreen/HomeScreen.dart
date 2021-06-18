@@ -48,6 +48,9 @@ class _HomeScreenState extends State<HomeScreen> {
             Expanded(child: Container(color: Colors.green)),
             Expanded(child: Container(color: Colors.blue)),
           ],
+          // IDEA: Home page display random stuffs you may like.
+          //       A heuristic function on how 'good' a post is based on Post time,
+          //       post likes & dislike, etc.
         ),
         drawer: UserInfoDrawer(
           userModel: this.userModel,
