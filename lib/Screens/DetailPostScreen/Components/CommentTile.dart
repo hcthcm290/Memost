@@ -13,6 +13,7 @@ class CommentTile extends StatefulWidget {
 
 class _CommentTileState extends State<CommentTile> {
   Comment _comment;
+  bool _hasReplies = false;
 
   ImageProvider _getUserAvatar(String userID) {
     // Todo: fetch user avatar from firebase, if user doesnot have avater return default avatar
@@ -60,11 +61,20 @@ class _CommentTileState extends State<CommentTile> {
     }
   }
 
+  Future<bool> hasReplies(String commentID) async {
+    await Future.delayed(Duration(seconds: 3));
+    return true;
+  }
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     _comment = this.widget.comment;
+    hasReplies(_comment.id).then((value) {
+      _hasReplies = value;
+      setState(() {});
+    });
   }
 
   @override
@@ -170,35 +180,36 @@ class _CommentTileState extends State<CommentTile> {
                     ],
                   ),
 
-                  // View more replies
-                  GestureDetector(
-                    onTap: () => _moveToCommentDetail(_comment.id),
-                    child: Container(
-                      child: Row(
-                        children: [
-                          Padding(
-                            padding: EdgeInsets.only(
-                                left: 2, right: defaultPadding * 0.5, top: 3),
-                            child: Icon(
-                              CupertinoIcons.arrowtriangle_down_fill,
-                              color: Colors.blue,
-                              size: 10,
+                  if (_hasReplies)
+                    // View more replies
+                    GestureDetector(
+                      onTap: () => _moveToCommentDetail(_comment.id),
+                      child: Container(
+                        child: Row(
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.only(
+                                  left: 2, right: defaultPadding * 0.5, top: 3),
+                              child: Icon(
+                                CupertinoIcons.arrowtriangle_down_fill,
+                                color: Colors.blue,
+                                size: 10,
+                              ),
                             ),
-                          ),
-                          Text(
-                            "View 23 replies",
-                            style: Theme.of(context)
-                                .textTheme
-                                .subtitle2
-                                .copyWith(
-                                    color: Colors.blue,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold),
-                          ),
-                        ],
+                            Text(
+                              "View 23 replies",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .subtitle2
+                                  .copyWith(
+                                      color: Colors.blue,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
                 ],
               ),
             )
