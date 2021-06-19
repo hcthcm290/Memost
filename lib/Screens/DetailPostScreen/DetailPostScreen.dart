@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/CustomWidgets/ListPost.dart';
 import 'package:flutter_application_1/Model/Comment.dart';
 import 'package:flutter_application_1/Model/Post.dart';
+import 'package:flutter_application_1/Screens/DetailPostScreen/CommentDetailScreen.dart';
 import 'package:flutter_application_1/Screens/DetailPostScreen/Components/CommentTile.dart';
 import 'package:flutter_application_1/Screens/DetailPostScreen/Components/SortComment.dart';
 import 'package:flutter_application_1/constant.dart';
@@ -67,6 +68,17 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
             ));
   }
 
+  void onTapReply(Comment comment) {
+    print("move to comment detail");
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => CommentDetailScreen(
+                  comment: comment,
+                  autoFocusInput: true,
+                )));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -88,22 +100,37 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
                 onTap: _onTapChangeCommentType,
                 child: SortComment(currentCommentType: _currentCommentType),
               ),
-              CommentTile(comment: _comment),
+              CommentTile(
+                comment: _comment,
+                numberOfReplies: 2,
+                onReplyClicked: onTapReply,
+              ),
               Divider(
                 height: 2,
                 thickness: 2,
               ),
-              CommentTile(comment: _comment),
+              CommentTile(
+                comment: _comment,
+                onReplyClicked: onTapReply,
+              ),
               Divider(
                 height: 2,
                 thickness: 2,
               ),
-              CommentTile(comment: _comment),
+              CommentTile(
+                comment: _comment,
+                numberOfReplies: 2,
+                onReplyClicked: onTapReply,
+              ),
               Divider(
                 height: 2,
                 thickness: 2,
               ),
-              CommentTile(comment: _comment),
+              CommentTile(
+                comment: _comment,
+                numberOfReplies: 32,
+                onReplyClicked: onTapReply,
+              ),
 
               // Add this size box to prevent the bottom comment ovelap the CommentTile
               Container(

@@ -1,19 +1,31 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/Model/Comment.dart';
+import 'package:flutter_application_1/Screens/DetailPostScreen/CommentDetailScreen.dart';
 import 'package:flutter_application_1/constant.dart';
 
 class CommentTile extends StatefulWidget {
-  CommentTile({Key key, @required this.comment}) : super(key: key);
+  CommentTile(
+      {Key key,
+      @required this.comment,
+      this.numberOfReplies,
+      this.onReplyClicked,
+      this.avatarSizePercentage = 1})
+      : super(key: key);
 
   final Comment comment;
+  final int numberOfReplies;
+  final Function(Comment comment) onReplyClicked;
+  final double avatarSizePercentage;
+
   @override
   _CommentTileState createState() => _CommentTileState();
 }
 
 class _CommentTileState extends State<CommentTile> {
   Comment _comment;
-  bool _hasReplies = false;
+  bool _commentLiked;
 
   ImageProvider _getUserAvatar(String userID) {
     // Todo: fetch user avatar from firebase, if user doesnot have avater return default avatar
@@ -25,24 +37,31 @@ class _CommentTileState extends State<CommentTile> {
     return "basa102";
   }
 
-  String _getCommentLiked(String commentID) {
+  String _getCommentLikedCount(String commentID) {
     // Todo: Fetch data
     return "153";
   }
 
   void _handleLikeComment(String commentID) {
     // Todo: Push data
-    print("comment liked");
+    _commentLiked = !_commentLiked;
+    setState(() {});
   }
 
   void _handleOnReplyTap(String commentID) {
-    // Todo: Move to screen CommentDetail
+    this.widget.onReplyClicked(this.widget.comment);
     print("tap reply");
   }
 
   void _moveToCommentDetail(String commentID) {
     // Todo: Move to screen CommentDetail
     print("move to comment detail");
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => CommentDetailScreen(
+                  comment: this.widget.comment,
+                )));
   }
 
   String _getDuration(DateTime dateTime) {
@@ -61,20 +80,14 @@ class _CommentTileState extends State<CommentTile> {
     }
   }
 
-  Future<bool> hasReplies(String commentID) async {
-    await Future.delayed(Duration(seconds: 3));
-    return true;
-  }
-
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     _comment = this.widget.comment;
-    hasReplies(_comment.id).then((value) {
-      _hasReplies = value;
-      setState(() {});
-    });
+
+    // Todo: fetch data from server to known if comment was liked or not
+    _commentLiked = false;
   }
 
   @override
@@ -87,16 +100,24 @@ class _CommentTileState extends State<CommentTile> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  shape: BoxShape.rectangle,
-                  image: new DecorationImage(
-                    image: _getUserAvatar(_comment.owner),
-                    fit: BoxFit.cover,
-                  ),
-                )),
+            Row(
+              children: [
+                SizedBox(
+                  width: 40 * (1 - this.widget.avatarSizePercentage),
+                  height: 40 * (1 - this.widget.avatarSizePercentage),
+                ),
+                Container(
+                    width: 40 * this.widget.avatarSizePercentage,
+                    height: 40 * this.widget.avatarSizePercentage,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.rectangle,
+                      image: new DecorationImage(
+                        image: _getUserAvatar(_comment.owner),
+                        fit: BoxFit.cover,
+                      ),
+                    )),
+              ],
+            ),
             Padding(
               padding: EdgeInsets.only(
                   left: defaultPadding * 0.5, top: defaultPadding * 0.25),
@@ -125,12 +146,21 @@ class _CommentTileState extends State<CommentTile> {
                   ]),
 
                   // Content
-                  Text(
-                    _comment.content,
-                    style: Theme.of(context).textTheme.bodyText2.copyWith(
-                        fontSize: 12,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w400),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _comment.content,
+                        style: Theme.of(context).textTheme.bodyText2.copyWith(
+                            fontSize: 12,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w400),
+                      ),
+                      if (this.widget.comment.imgLink != null &&
+                          this.widget.comment.imgLink != "")
+                        CachedNetworkImage(
+                            imageUrl: this.widget.comment.imgLink),
+                    ],
                   ),
                   // Reply and like button
                   Row(
@@ -164,14 +194,24 @@ class _CommentTileState extends State<CommentTile> {
                                 vertical: defaultPadding * 0.5),
                             child: Row(
                               children: [
-                                Icon(
-                                  CupertinoIcons.heart_circle_fill,
-                                  size: 18,
+                                GestureDetector(
+                                  onTap: () => _handleLikeComment(
+                                      this.widget.comment.id),
+                                  child: Icon(
+                                    CupertinoIcons.heart_circle_fill,
+                                    size: 18,
+                                    color: _commentLiked == true
+                                        ? Colors.red
+                                        : Colors.white70,
+                                  ),
                                 ),
                                 Padding(
                                     padding: EdgeInsets.only(
                                         left: defaultPadding * 0.75),
-                                    child: Text(_getCommentLiked(_comment.id))),
+                                    child: Text(
+                                      _getCommentLikedCount(_comment.id),
+                                      style: TextStyle(color: Colors.white70),
+                                    )),
                               ],
                             ),
                           ),
@@ -180,7 +220,8 @@ class _CommentTileState extends State<CommentTile> {
                     ],
                   ),
 
-                  if (_hasReplies)
+                  if (this.widget.numberOfReplies != null &&
+                      this.widget.numberOfReplies > 0)
                     // View more replies
                     GestureDetector(
                       onTap: () => _moveToCommentDetail(_comment.id),
@@ -197,7 +238,7 @@ class _CommentTileState extends State<CommentTile> {
                               ),
                             ),
                             Text(
-                              "View 23 replies",
+                              "View ${this.widget.numberOfReplies} replies",
                               style: Theme.of(context)
                                   .textTheme
                                   .subtitle2
