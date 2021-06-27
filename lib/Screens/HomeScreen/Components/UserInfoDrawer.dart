@@ -25,7 +25,11 @@ class _UserInfoDrawerState extends State<UserInfoDrawer> {
   void onTapMyProfile() async {
     await Future.delayed(Duration(milliseconds: 300));
     Navigator.push(
-        context, MaterialPageRoute(builder: (context) => UserInfoScreen()));
+        context,
+        MaterialPageRoute(
+            builder: (context) => UserInfoScreen(
+                  model: this.widget.userModel,
+                )));
   }
 
   @override
