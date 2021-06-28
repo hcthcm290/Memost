@@ -2,45 +2,87 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/CustomWidgets/ListPost.dart';
 import 'package:flutter_application_1/Model/Comment.dart';
+import 'package:flutter_application_1/Model/UserModel.dart';
+import 'package:flutter_application_1/Screens/DetailPostScreen/CommentDetailScreen.dart';
 import 'package:flutter_application_1/Screens/DetailPostScreen/Components/CommentTile.dart';
+import 'package:flutter_application_1/Screens/DetailPostScreen/Components/SortComment.dart';
 import 'package:flutter_application_1/Screens/DetailPostScreen/DetailPostScreen.dart';
+import 'package:flutter_application_1/Screens/UserInfoScreen/Components/PostCommentUI.dart';
 import 'package:flutter_application_1/constant.dart';
 
-class CommentDetailScreen extends StatefulWidget {
-  CommentDetailScreen({Key key, this.comment, this.autoFocusInput = false})
-      : super(key: key);
+// Similar to PostDetailScreen but move the user's comment tile to the top
+class UserPostCommentDetailScreen extends StatefulWidget {
+  UserPostCommentDetailScreen({
+    Key key,
+    this.postUI,
+    this.focusCommentID,
+    this.userModel,
+  }) : super(key: key);
 
-  final Comment comment;
-  final bool autoFocusInput;
+  final PostCommentUI postUI;
+  final UserModel userModel;
 
+  //
+  final String focusCommentID;
   @override
-  _CommentDetailScreenState createState() => _CommentDetailScreenState();
+  _UserCommentDetailScreenState createState() =>
+      _UserCommentDetailScreenState();
 }
 
-class _CommentDetailScreenState extends State<CommentDetailScreen> {
-  List<Comment> subComments = [];
-  TextEditingController inputController = TextEditingController();
-  ImageProvider _imageInComment;
-  File _fileImageInComment;
+class _UserCommentDetailScreenState extends State<UserPostCommentDetailScreen> {
+  String _currentCommentType = "Hot comment";
+
+  Comment _comment;
+
+  List<Widget> _allComment = [];
+  List<Widget> _mainScreenComponent = [];
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    buildScreen();
     inputController.addListener(_handleInputCommentChange);
-
-    // Todo: Fetch subcomment for comment
-    Comment commentWithImage = Comment();
-    commentWithImage.content = "Comment with image";
-    commentWithImage.createdDate = DateTime.now();
-    commentWithImage.imgLink =
-        "https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/2010-kodiak-bear-1.jpg/220px-2010-kodiak-bear-1.jpg";
-    commentWithImage.owner = "basa102";
-
-    subComments.add(commentWithImage);
-    subComments.add(widget.comment);
   }
+
+  Future<void> loadAllComment() async {
+    // Todo:
+    // load all comment of the post,
+    // remember to bring the comment of this.widget.userModel to front
+
+    _comment = Comment();
+    _comment.createdDate = DateTime.now();
+    _comment.content = "Wow man, best meme, thank you";
+    _comment.owner = "basa";
+    _comment.id = "cauicb1265";
+
+    _allComment.add(CommentTile(
+      comment: _comment,
+      numberOfReplies: 2,
+      onReplyClicked: onTapReply,
+    ));
+    _allComment.add(CommentTile(
+      comment: _comment,
+      numberOfReplies: 2,
+      onReplyClicked: onTapReply,
+    ));
+    _allComment.add(CommentTile(
+      comment: _comment,
+      numberOfReplies: 2,
+      onReplyClicked: onTapReply,
+    ));
+    _allComment.add(CommentTile(
+      comment: _comment,
+      numberOfReplies: 2,
+      onReplyClicked: onTapReply,
+    ));
+  }
+
+  ImageProvider _imageInComment;
+  File _fileImageInComment;
+  TextEditingController inputController = TextEditingController();
 
   void _handleInputCommentChange() {
     // only update ui when input controller change from no text to text to save performance
@@ -49,61 +91,90 @@ class _CommentDetailScreenState extends State<CommentDetailScreen> {
     }
   }
 
+  void _onTapChangeCommentType() {}
+
+  void _postComment() {}
+
   void _handleOnTapCameraIcon() {
     showModalBottomSheet(
         context: context,
         builder: (context) => ChooseImageTypeModel(
               onChooseImage: (image) {
                 setState(() {
-                  _imageInComment = Image.file(image).image;
                   _fileImageInComment = image;
+                  _imageInComment = Image.file(image).image;
                 });
                 Navigator.pop(context);
               },
             ));
   }
 
-  void _postComment() {
-    // Todo: Post subcomment to current widget.comment
+  void onTapReply(Comment comment) {
+    print("move to comment detail");
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => CommentDetailScreen(
+                  comment: comment,
+                  autoFocusInput: true,
+                )));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Color.fromARGB(255, 15, 15, 15),
       appBar: AppBar(
         backgroundColor: Colors.black,
         centerTitle: true,
         title: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text("Post"),
-          ],
-        ),
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [Text("Post")]),
       ),
       body: Stack(children: [
-        Container(
-          child: ListView.builder(
-              itemCount: subComments.length + 1,
-              itemBuilder: (context, index) {
-                if (index == 0) {
-                  // Base comment
-                  return CommentTile(
-                    comment: this.widget.comment,
-                  );
-                } else {
-                  // Sub comment
-                  return CommentTile(
-                    avatarSizePercentage: 0.8,
-                    comment: subComments[index - 1],
-                  );
-                }
-              }),
+        ListView.builder(
+          itemBuilder: (context, index) {
+            if (index < _mainScreenComponent.length) {
+              return _mainScreenComponent[index];
+            }
+          },
         ),
-        buildBottomCommentInput(context)
+        // Bottom comment input field
+        buildBottomCommentInput(context),
       ]),
     );
+  }
+
+  Future<void> buildScreen() async {
+    List<Widget> screenWidget = [
+      this.widget.postUI,
+      GestureDetector(
+          onTap: _onTapChangeCommentType,
+          child: SortComment(currentCommentType: _currentCommentType)),
+    ];
+
+    setState(() {
+      _mainScreenComponent = screenWidget;
+    });
+
+    await loadAllComment();
+    for (int i = 0; i < _allComment.length; i++) {
+      screenWidget.add(_allComment[i]);
+      screenWidget.add(Divider(
+        height: 1,
+        thickness: 1,
+      ));
+    }
+
+    screenWidget.add(Container(
+      height: 150,
+      color: Colors.black,
+    ));
+
+    setState(() {
+      _mainScreenComponent = screenWidget;
+    });
   }
 
   Align buildBottomCommentInput(BuildContext context) {
@@ -153,7 +224,6 @@ class _CommentDetailScreenState extends State<CommentDetailScreen> {
                                 onTap: () {
                                   setState(() {
                                     _imageInComment = null;
-                                    _fileImageInComment = null;
                                   });
                                 },
                                 child: Icon(
@@ -166,7 +236,6 @@ class _CommentDetailScreenState extends State<CommentDetailScreen> {
                         ),
                       ),
                     TextField(
-                      autofocus: this.widget.autoFocusInput,
                       controller: inputController,
                       keyboardType: TextInputType.multiline,
                       maxLines: 5,

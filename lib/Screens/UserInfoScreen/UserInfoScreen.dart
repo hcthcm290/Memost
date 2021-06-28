@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/Model/UserModel.dart';
 import 'package:flutter_application_1/Screens/UserInfoScreen/Components/UserListComment.dart';
 import 'package:flutter_application_1/Screens/UserInfoScreen/Components/UserListPost.dart';
+import 'package:flutter_application_1/Screens/UserInfoScreen/EditProfileScreen.dart';
+import 'package:flutter_application_1/Services/UserCredentialService.dart';
 import 'package:flutter_application_1/constant.dart';
 import 'package:tuple/tuple.dart';
 
@@ -39,6 +41,15 @@ class _UserInfoScreenState extends State<UserInfoScreen>
     });
   }
 
+  void _onTapEditProfile() {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => EditProfileScreen(
+                  userModel: widget.model,
+                )));
+  }
+
   @override
   void initState() {
     super.initState();
@@ -51,18 +62,33 @@ class _UserInfoScreenState extends State<UserInfoScreen>
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        // appBar: AppBar(
-        //   bottom: TabBar(
-        //     controller: _tabController,
-        //     tabs: _pages
-        //         .map<Tab>((page) => Tab(
-        //               text: page.item1,
-        //             ))
-        //         .toList(),
-        //   ),
-        // ),
         appBar: AppBar(
           backgroundColor: Colors.black,
+          title: Row(
+            children: [
+              Text("${this.widget.model.username}",
+                  style: Theme.of(context).textTheme.bodyText1.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16)),
+              Spacer(),
+              if (this.widget.model.id ==
+                  UserCredentialService.instance.currentUser.uid)
+                Padding(
+                  padding: EdgeInsets.only(right: defaultPadding * 0.5),
+                  child: GestureDetector(
+                    onTap: _onTapEditProfile,
+                    child: Text(
+                      "Edit profile",
+                      style: Theme.of(context).textTheme.bodyText1.copyWith(
+                          color: Colors.blue,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16),
+                    ),
+                  ),
+                )
+            ],
+          ),
         ),
         body: NestedScrollView(
           physics: NeverScrollableScrollPhysics(),
@@ -131,7 +157,7 @@ class _UserInfoScreenState extends State<UserInfoScreen>
                                   "Post",
                                   style: Theme.of(context)
                                       .textTheme
-                                      .subtitle1
+                                      .subtitle2
                                       .copyWith(color: Colors.white70),
                                 ),
                               ],

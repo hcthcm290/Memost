@@ -42,6 +42,7 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
   }
 
   ImageProvider _imageInComment;
+  File _fileImageInComment;
   TextEditingController inputController = TextEditingController();
 
   void _handleInputCommentChange() {
@@ -61,7 +62,8 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
         builder: (context) => ChooseImageTypeModel(
               onChooseImage: (image) {
                 setState(() {
-                  _imageInComment = image;
+                  _fileImageInComment = image;
+                  _imageInComment = Image.file(image).image;
                 });
                 Navigator.pop(context);
               },
@@ -282,7 +284,7 @@ class ChooseImageTypeModel extends StatefulWidget {
     @required this.onChooseImage,
   }) : super(key: key);
 
-  final Function(ImageProvider imageProvider) onChooseImage;
+  final Function(File imageProvider) onChooseImage;
   @override
   _ChooseImageTypeModelState createState() => _ChooseImageTypeModelState();
 }
@@ -295,7 +297,7 @@ class _ChooseImageTypeModelState extends State<ChooseImageTypeModel> {
 
     print(image);
     if (image != null) {
-      this.widget.onChooseImage(Image.file(File(image.path)).image);
+      this.widget.onChooseImage(File(image.path));
     }
   }
 
@@ -304,7 +306,7 @@ class _ChooseImageTypeModelState extends State<ChooseImageTypeModel> {
 
     print(image);
     if (image != null) {
-      this.widget.onChooseImage(Image.file(File(image.path)).image);
+      this.widget.onChooseImage(File(image.path));
     }
   }
 
