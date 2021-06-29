@@ -159,7 +159,9 @@ class _CommentTileState extends State<CommentTile> {
                       if (this.widget.comment.imgLink != null &&
                           this.widget.comment.imgLink != "")
                         CachedNetworkImage(
-                            imageUrl: this.widget.comment.imgLink),
+                          imageUrl: this.widget.comment.imgLink,
+                          width: 200,
+                        ),
                     ],
                   ),
                   // Reply and like button
