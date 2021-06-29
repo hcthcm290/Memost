@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/CustomWidgets/ListPost.dart';
 import 'package:flutter_application_1/Model/Post.dart';
+import 'package:flutter_application_1/Model/Reaction_Type.dart';
 import 'package:flutter_application_1/Model/UserModel.dart';
 import 'package:flutter_application_1/Screens/DetailPostScreen/DetailPostScreen.dart';
 import 'package:flutter_application_1/Screens/UserInfoScreen/UserCommentDetailScreen.dart';

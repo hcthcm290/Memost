@@ -11,8 +11,10 @@ import 'package:flutter_application_1/Screens/DetailPostScreen/DetailPostScreen.
 import 'package:flutter_application_1/constant.dart';
 
 class NotificationPostDetail extends StatefulWidget {
-  const NotificationPostDetail({Key key, this.postUI}) : super(key: key);
+  const NotificationPostDetail({Key key, this.postUI, this.comment})
+      : super(key: key);
   final PostUI postUI;
+  final Comment comment;
   @override
   _NotificationPostDetailState createState() => _NotificationPostDetailState();
 }
@@ -21,17 +23,33 @@ class _NotificationPostDetailState extends State<NotificationPostDetail> {
   String _currentCommentType = "Hot comment";
 
   Comment _comment;
+  List<Widget> _allComment = [];
+  List<Widget> _mainScreenComponent = [];
 
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
+  Future<void> loadAllComment() async {
+    // Todo:
+    // load all comment of the widget.commnt
 
     _comment = Comment();
     _comment.createdDate = DateTime.now();
     _comment.content = "Wow man, best meme, thank you";
     _comment.owner = "basa";
     _comment.id = "cauicb1265";
+
+    _allComment.add(CommentTile(
+      comment: _comment,
+      numberOfReplies: 2,
+      onReplyClicked: onTapReply,
+    ));
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    _comment = this.widget.comment;
+    buildScreen();
     inputController.addListener(_handleInputCommentChange);
   }
 
@@ -88,58 +106,48 @@ class _NotificationPostDetailState extends State<NotificationPostDetail> {
             children: [Text("Post")]),
       ),
       body: Stack(children: [
-        SingleChildScrollView(
-          child: Column(
-            children: [
-              this.widget.postUI,
-              GestureDetector(
-                onTap: _onTapChangeCommentType,
-                child: SortComment(currentCommentType: _currentCommentType),
-              ),
-              CommentTile(
-                comment: _comment,
-                numberOfReplies: 2,
-                onReplyClicked: onTapReply,
-              ),
-              Divider(
-                height: 2,
-                thickness: 2,
-              ),
-              CommentTile(
-                comment: _comment,
-                onReplyClicked: onTapReply,
-              ),
-              Divider(
-                height: 2,
-                thickness: 2,
-              ),
-              CommentTile(
-                comment: _comment,
-                numberOfReplies: 2,
-                onReplyClicked: onTapReply,
-              ),
-              Divider(
-                height: 2,
-                thickness: 2,
-              ),
-              CommentTile(
-                comment: _comment,
-                numberOfReplies: 32,
-                onReplyClicked: onTapReply,
-              ),
-
-              // Add this size box to prevent the bottom comment ovelap the CommentTile
-              Container(
-                height: 110,
-                color: Colors.black,
-              )
-            ],
-          ),
+        ListView.builder(
+          itemBuilder: (context, index) {
+            if (index < _mainScreenComponent.length) {
+              return _mainScreenComponent[index];
+            }
+          },
         ),
         // Bottom comment input field
         buildBottomCommentInput(context),
       ]),
     );
+  }
+
+  Future<void> buildScreen() async {
+    List<Widget> screenWidget = [
+      this.widget.postUI,
+      GestureDetector(
+          onTap: _onTapChangeCommentType,
+          child: SortComment(currentCommentType: _currentCommentType)),
+    ];
+
+    setState(() {
+      _mainScreenComponent = screenWidget;
+    });
+
+    await loadAllComment();
+    for (int i = 0; i < _allComment.length; i++) {
+      screenWidget.add(_allComment[i]);
+      screenWidget.add(Divider(
+        height: 1,
+        thickness: 1,
+      ));
+    }
+
+    screenWidget.add(Container(
+      height: 150,
+      color: Colors.black,
+    ));
+
+    setState(() {
+      _mainScreenComponent = screenWidget;
+    });
   }
 
   Align buildBottomCommentInput(BuildContext context) {
