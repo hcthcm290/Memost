@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/CustomWidgets/ListPost.dart';
@@ -10,6 +11,8 @@ import 'package:flutter_application_1/Screens/DetailPostScreen/Components/SortCo
 import 'package:flutter_application_1/Services/UserCredentialService.dart';
 import 'package:flutter_application_1/constant.dart';
 import 'dart:io';
+
+import 'package:cloud_firestore/cloud_firestore.dart' as db;
 
 import 'package:image_picker/image_picker.dart';
 
@@ -30,6 +33,7 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
   UserModel userModel;
 
   Comment _comment;
+  Post post() => widget.postUI.post;
 
   @override
   void initState() {
@@ -49,6 +53,25 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
       setState(() {});
     });
 
+    var query = db.FirebaseFirestore.instance
+        .collection("post")
+        .doc(widget.postUI.post.id)
+        .collection("comment")
+        .where("isDeleted", isNotEqualTo: "true");
+
+    query.get().then((value) {
+      this.setState(() {
+        snapshot = value;
+        buildScreen();
+      });
+    });
+    query.snapshots().listen((value) {
+      this.setState(() {
+        snapshot = value;
+        buildScreen();
+      });
+    });
+
     _comment = Comment();
     _comment.createdDate = DateTime.now();
     _comment.content = "Wow man, best meme, thank you";
@@ -63,6 +86,7 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
   ImageProvider _imageInComment;
   File _fileImageInComment;
   TextEditingController inputController = TextEditingController();
+  QuerySnapshot snapshot;
   List<Widget> _allComment = [];
   List<Widget> _mainScreenComponent = [];
 
@@ -71,32 +95,19 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
     // load all comment of the post,
     // remember to bring the comment of this.widget.userModel to front
 
-    _comment = Comment();
-    _comment.createdDate = DateTime.now();
-    _comment.content = "Wow man, best meme, thank you";
-    _comment.owner = "basa";
-    _comment.id = "cauicb1265";
+    List<Comment> data =
+        snapshot.docs.map((e) => Comment.fromJson(e.data(), post())).toList();
 
-    _allComment.add(CommentTile(
-      comment: _comment,
-      numberOfReplies: 2,
-      onReplyClicked: onTapReply,
-    ));
-    _allComment.add(CommentTile(
-      comment: _comment,
-      numberOfReplies: 2,
-      onReplyClicked: onTapReply,
-    ));
-    _allComment.add(CommentTile(
-      comment: _comment,
-      numberOfReplies: 2,
-      onReplyClicked: onTapReply,
-    ));
-    _allComment.add(CommentTile(
-      comment: _comment,
-      numberOfReplies: 2,
-      onReplyClicked: onTapReply,
-    ));
+    _allComment.clear();
+    for (var item in data.where((element) =>
+        element.prevComment == null || element.prevComment == "")) {
+      _allComment.add(CommentTile(
+        comment: item,
+        numberOfReplies:
+            data.where((element) => element.prevComment == item.id).length,
+        onReplyClicked: onTapReply,
+      ));
+    }
   }
 
   void _handleInputCommentChange() {
@@ -117,7 +128,8 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
     cmt.post = widget.postUI.post;
     cmt.prevComment = "";
     cmt.upload().then((_) {
-      cmt.setImage(_fileImageInComment.readAsBytesSync());
+      if (_fileImageInComment != null)
+        cmt.setImage(_fileImageInComment.readAsBytesSync());
     });
   }
 

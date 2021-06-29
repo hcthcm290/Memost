@@ -1,1 +1,1 @@
-enum ReactionType { none, loved, notloved }
+enum ReactionType { none, loved, hated }

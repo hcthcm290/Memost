@@ -10,6 +10,7 @@ import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:http/http.dart' as http;
 
 class UserCredentialService {
+  UserModel model;
   final _onAuthChange = new StreamController<User>.broadcast(sync: true);
   Stream<User> get onAuthChange => _onAuthChange.stream;
 
@@ -17,7 +18,8 @@ class UserCredentialService {
   static UserCredentialService get instance {
     if (_instance == null) {
       _instance = UserCredentialService._();
-      FirebaseAuth.instance.authStateChanges().listen((event) {
+      FirebaseAuth.instance.authStateChanges().listen((event) async {
+        instance.model = await UserCredentialService.convertToUserModel(event);
         _instance._currentUser = event;
         _instance._onAuthChange.add(event);
       });
