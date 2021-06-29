@@ -11,6 +11,7 @@ import 'package:flutter_application_1/Screens/DetailPostScreen/Components/SortCo
 import 'package:flutter_application_1/Services/UserCredentialService.dart';
 import 'package:flutter_application_1/constant.dart';
 import 'dart:io';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart' as db;
 
@@ -72,12 +73,6 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
       });
     });
 
-    _comment = Comment();
-    _comment.createdDate = DateTime.now();
-    _comment.content = "Wow man, best meme, thank you";
-    _comment.owner = "basa";
-    _comment.id = "cauicb1265";
-
     inputController.addListener(_handleInputCommentChange);
   }
 
@@ -100,6 +95,7 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
     for (var item in data.where((element) =>
         element.prevComment == null || element.prevComment == "")) {
       _allComment.add(CommentTile(
+        key: ValueKey(item.id),
         comment: item,
         numberOfReplies:
             data.where((element) => element.prevComment == item.id).length,
@@ -128,6 +124,11 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
     cmt.upload().then((_) {
       if (_fileImageInComment != null)
         cmt.setImage(_fileImageInComment.readAsBytesSync());
+      FocusScope.of(context).unfocus();
+      inputController.text = "";
+      _imageInComment = null;
+      _fileImageInComment = null;
+      setState(() {});
     });
   }
 
@@ -176,6 +177,13 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
             }
           },
         ),
+        // ScrollablePositionedList.builder(
+        //     itemCount: _mainScreenComponent.length,
+        //     itemBuilder: (context, index) {
+        //       if (index < _mainScreenComponent.length) {
+        //         return _mainScreenComponent[index];
+        //       }
+        //     }),
         // Bottom comment input field
         buildBottomCommentInput(context),
       ]),
