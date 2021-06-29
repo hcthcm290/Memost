@@ -69,7 +69,7 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
     query.snapshots().listen((value) {
       this.setState(() {
         snapshot = value;
-        buildScreen();
+        //buildScreen();
       });
     });
 
@@ -82,6 +82,7 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
   QuerySnapshot snapshot;
   List<Widget> _allComment = [];
   List<Widget> _mainScreenComponent = [];
+  final ItemScrollController itemScrollController = ItemScrollController();
 
   Future<void> loadAllComment() async {
     // Todo:
@@ -121,14 +122,24 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
     cmt.owner = userModel.username;
     cmt.post = widget.postUI.post;
     cmt.prevComment = "";
-    cmt.upload().then((_) {
+    cmt.upload().then((_) async {
       if (_fileImageInComment != null)
-        cmt.setImage(_fileImageInComment.readAsBytesSync());
+        await cmt.setImage(_fileImageInComment.readAsBytesSync());
       FocusScope.of(context).unfocus();
       inputController.text = "";
       _imageInComment = null;
       _fileImageInComment = null;
+      _mainScreenComponent.insert(
+          2,
+          CommentTile(
+            key: ValueKey(cmt.id),
+            comment: cmt,
+            numberOfReplies: 0,
+            onReplyClicked: onTapReply,
+          ));
       setState(() {});
+      itemScrollController.scrollTo(
+          index: 2, duration: Duration(milliseconds: 200), alignment: 1);
     });
   }
 
@@ -170,21 +181,22 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
             children: [Text("Post")]),
       ),
       body: Stack(children: [
-        ListView.builder(
-          itemBuilder: (context, index) {
-            if (index < _mainScreenComponent.length) {
-              return _mainScreenComponent[index];
-            }
-          },
-        ),
-        // ScrollablePositionedList.builder(
-        //     itemCount: _mainScreenComponent.length,
-        //     itemBuilder: (context, index) {
-        //       if (index < _mainScreenComponent.length) {
-        //         return _mainScreenComponent[index];
-        //       }
-        //     }),
-        // Bottom comment input field
+        // ListView.builder(
+        //   itemBuilder: (context, index) {
+        //     if (index < _mainScreenComponent.length) {
+        //       return _mainScreenComponent[index];
+        //     }
+        //   },
+        // ),
+        ScrollablePositionedList.builder(
+            itemScrollController: itemScrollController,
+            itemCount: _mainScreenComponent.length,
+            itemBuilder: (context, index) {
+              if (index < _mainScreenComponent.length) {
+                return _mainScreenComponent[index];
+              }
+            }),
+        //Bottom comment input field
         buildBottomCommentInput(context),
       ]),
     );

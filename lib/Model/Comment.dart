@@ -52,24 +52,46 @@ class Comment {
       .getData()
       .then((value) => MemoryImage(value));
 
-  void setImage(Uint8List i) => FirebaseStorage.instance
-          .ref("comment")
-          .child(id)
-          .child("image.png")
-          .putData(i)
-          .then((value) {
-        value.ref.getDownloadURL().then((value) {
-          imgLink = value;
-          if (id != null)
-            db.FirebaseFirestore.instance
-                .collection("post")
-                .doc(post.id)
-                .collection("comment")
-                .doc(id)
-                .set(<String, dynamic>{"imgLink": value},
-                    db.SetOptions(merge: true));
-        });
-      });
+  Future<void> setImage(Uint8List i) async {
+    // FirebaseStorage.instance
+    //       .ref("comment")
+    //       .child(id)
+    //       .child("image.png")
+    //       .putData(i)
+    //       .then((value) {
+    //     value.ref.getDownloadURL().then((value) {
+    //       imgLink = value;
+    //       if (id != null)
+    //         db.FirebaseFirestore.instance
+    //             .collection("post")
+    //             .doc(post.id)
+    //             .collection("comment")
+    //             .doc(id)
+    //             .set(<String, dynamic>{"imgLink": value},
+    //                 db.SetOptions(merge: true));
+    //     });
+    //   });
+
+    TaskSnapshot imageSnap = await FirebaseStorage.instance
+        .ref("comment")
+        .child(id)
+        .child("image.png")
+        .putData(i);
+
+    this.imgLink = await imageSnap.ref.getDownloadURL();
+
+    if (id != null) {
+      await db.FirebaseFirestore.instance
+          .collection("post")
+          .doc(post.id)
+          .collection("comment")
+          .doc(id)
+          .set(<String, dynamic>{"imgLink": imgLink},
+              db.SetOptions(merge: true));
+      return;
+    }
+  }
+
   Future<void> upload() {
     if (id != null && id != "")
       return db.FirebaseFirestore.instance
