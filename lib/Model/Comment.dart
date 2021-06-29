@@ -5,5 +5,6 @@ class Comment {
   String post;
   String content;
   String preContent;
+  String imgLink;
   String isDeleted;
 }

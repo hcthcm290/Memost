@@ -1,35 +1,32 @@
-import 'dart:ffi';
-import 'dart:io';
-import 'dart:math';
-
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart' as db;
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/CustomWidgets/NullableImage.dart';
+import 'package:flutter_application_1/CustomWidgets/ListPost.dart';
 import 'package:flutter_application_1/Model/Post.dart';
-import 'package:flutter_application_1/Model/Group.dart';
-import 'package:flutter_application_1/Model/Reaction_Type.dart';
+import 'package:flutter_application_1/Model/UserModel.dart';
 import 'package:flutter_application_1/Screens/DetailPostScreen/DetailPostScreen.dart';
+import 'package:flutter_application_1/Screens/UserInfoScreen/UserCommentDetailScreen.dart';
 import 'package:flutter_application_1/constant.dart';
 
-class PostUI extends StatefulWidget {
+// this is a special post ui that instead of navigate to CommentDetailScreen,
+// it navigate to UserCommentDetailScreen
+class PostCommentUI extends StatefulWidget {
   final Post post;
-  PostUI({
+  PostCommentUI({
     Key key,
     @required this.post,
     this.canNavigateToDetail = true,
+    this.userModel,
   }) : super(key: key);
 
   final bool canNavigateToDetail;
+  final UserModel userModel;
 
   @override
-  _PostUIState createState() => _PostUIState();
+  _PostCommentUIState createState() => _PostCommentUIState();
 }
 
-class _PostUIState extends State<PostUI> {
+class _PostCommentUIState extends State<PostCommentUI> {
   ReactionType _reactionType = ReactionType.none;
   double footerFontSize = 12;
   double footerIconSize = 27;
@@ -81,8 +78,9 @@ class _PostUIState extends State<PostUI> {
       Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => DetailPostScreen(
+              builder: (context) => UserPostCommentDetailScreen(
                     postUI: this.widget,
+                    userModel: this.widget.userModel,
                   )));
     }
   }
@@ -96,8 +94,9 @@ class _PostUIState extends State<PostUI> {
       Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => DetailPostScreen(
+              builder: (context) => UserPostCommentDetailScreen(
                     postUI: this.widget,
+                    userModel: this.widget.userModel,
                   )));
     }
   }
@@ -328,89 +327,6 @@ class _PostUIState extends State<PostUI> {
           )
         ],
       ),
-    );
-  }
-}
-
-class ListPostUI extends StatefulWidget {
-  ListPostUI({Key key}) : super(key: key);
-
-  @override
-  _ListPostUIState createState() => _ListPostUIState();
-}
-
-class _ListPostUIState extends State<ListPostUI> {
-  db.QuerySnapshot snapshot;
-
-  _ListPostUIState() {
-    var query = db.FirebaseFirestore.instance
-        .collection("post")
-        .where("isDeleted", isNotEqualTo: "true");
-    query.get().then((value) {
-      this.setState(() {
-        snapshot = value;
-      });
-    });
-    query.snapshots().listen((value) {
-      this.setState(() {
-        snapshot = value;
-      });
-    });
-  }
-
-  Widget itemBuilder(BuildContext context, int index) {
-    return PostUI(
-      post: Post.fromJson(snapshot.docs[index].data()),
-    );
-  }
-
-  separatorBuilder(BuildContext context, int index) => Divider(
-        height: 10.0,
-      );
-
-  int itemCount() => snapshot.size;
-  static int _computeActualChildCount(int itemCount) {
-    return max(0, itemCount * 2 - 1);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return /*
-        Container(
-      child: Expanded(
-        flex: 100,
-        child: SizedBox(
-          height: 400,
-          width: 400,
-          child:
-              // */
-        SliverList(
-      delegate: SliverChildBuilderDelegate(
-        // Copied from ListView :)
-        (BuildContext context, int index) {
-          final int itemIndex = index ~/ 2;
-          Widget widget;
-          if (index.isEven) {
-            widget = itemBuilder(context, itemIndex);
-          } else {
-            widget = separatorBuilder(context, itemIndex);
-            assert(() {
-              if (widget == null) {
-                // ignore: dead_code
-                throw FlutterError('separatorBuilder cannot return null.');
-              }
-              return true;
-            }());
-          }
-          return widget;
-        },
-        childCount: _computeActualChildCount(itemCount()),
-      ),
-
-      /*
-          ),
-        ),
-      ), // */
     );
   }
 }

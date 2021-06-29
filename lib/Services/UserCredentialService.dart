@@ -49,6 +49,7 @@ class UserCredentialService {
 
       UserModel model = UserModel();
       model.fromMap(userModelData);
+      model.id = user.uid;
 
       return model;
     } catch (e) {

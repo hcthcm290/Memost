@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/Model/UserModel.dart';
 import 'package:flutter_application_1/Screens/CreateGroupScreen/CreateGroupNameScreen.dart';
 import 'package:flutter_application_1/Screens/Login/LoginScreen.dart';
+import 'package:flutter_application_1/Screens/UserInfoScreen/UserInfoScreen.dart';
 import 'package:flutter_application_1/Services/UserCredentialService.dart';
 import 'package:flutter_application_1/constant.dart';
 import 'package:provider/provider.dart';
@@ -20,7 +21,15 @@ class UserInfoDrawer extends StatefulWidget {
 }
 
 class _UserInfoDrawerState extends State<UserInfoDrawer> {
-  void onTapMyProfile() {}
+  void onTapMyProfile() async {
+    await Future.delayed(Duration(milliseconds: 300));
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => UserInfoScreen(
+                  model: this.widget.userModel,
+                )));
+  }
 
   @override
   void initState() {

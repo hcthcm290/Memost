@@ -6,6 +6,7 @@ class UserModel {
   String stars;
   String avatarUrl;
   String id;
+  String description;
 
   UserModel(
       {this.username,
@@ -27,6 +28,7 @@ class UserModel {
     map["createdDate"] = createdDate.toIso8601String();
     map["stars"] = stars;
     map["avatarUrl"] = avatarUrl;
+    map["description"] = description;
 
     return map;
   }
@@ -38,5 +40,6 @@ class UserModel {
     createdDate = DateTime.parse(map["createdDate"]);
     stars = map["stars"];
     avatarUrl = map["avatarUrl"];
+    description = map["description"];
   }
 }
