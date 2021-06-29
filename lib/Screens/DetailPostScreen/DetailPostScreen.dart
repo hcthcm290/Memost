@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/CustomWidgets/ListPost.dart';
 import 'package:flutter_application_1/Model/Comment.dart';
 import 'package:flutter_application_1/Model/Post.dart';
+import 'package:flutter_application_1/Model/UserModel.dart';
 import 'package:flutter_application_1/Screens/DetailPostScreen/CommentDetailScreen.dart';
 import 'package:flutter_application_1/Screens/DetailPostScreen/Components/CommentTile.dart';
 import 'package:flutter_application_1/Screens/DetailPostScreen/Components/SortComment.dart';
+import 'package:flutter_application_1/Services/UserCredentialService.dart';
 import 'package:flutter_application_1/constant.dart';
 import 'dart:io';
 
@@ -25,6 +27,7 @@ class DetailPostScreen extends StatefulWidget {
 
 class _DetailPostScreenState extends State<DetailPostScreen> {
   String _currentCommentType = "Hot comment";
+  UserModel userModel;
 
   Comment _comment;
 
@@ -32,6 +35,19 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
+
+    UserCredentialService.convertToUserModel(
+            UserCredentialService.instance.currentUser)
+        .then((value) {
+      setState(() {
+        userModel = value;
+      });
+    });
+    UserCredentialService.instance.onAuthChange.listen((user) async {
+      userModel = await UserCredentialService.convertToUserModel(user);
+
+      setState(() {});
+    });
 
     _comment = Comment();
     _comment.createdDate = DateTime.now();
@@ -54,7 +70,18 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
 
   void _onTapChangeCommentType() {}
 
-  void _postComment() {}
+  void _postComment() {
+    Comment cmt = new Comment();
+    cmt.content = inputController.text;
+    cmt.createdDate = DateTime.now();
+    cmt.isDeleted = "false";
+    cmt.owner = userModel.username;
+    cmt.post = widget.postUI.post;
+    cmt.prevComment = "";
+    cmt.upload().then((_) {
+      cmt.setImage(_fileImageInComment.readAsBytesSync());
+    });
+  }
 
   void _handleOnTapCameraIcon() {
     showModalBottomSheet(
