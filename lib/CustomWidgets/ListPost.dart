@@ -11,9 +11,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/CustomWidgets/NullableImage.dart';
 import 'package:flutter_application_1/Model/Post.dart';
 import 'package:flutter_application_1/Model/Group.dart';
+import 'package:flutter_application_1/Model/Reaction.dart';
 import 'package:flutter_application_1/Model/Reaction_Type.dart';
+import 'package:flutter_application_1/Model/UserModel.dart';
 import 'package:flutter_application_1/Screens/DetailPostScreen/DetailPostScreen.dart';
+import 'package:flutter_application_1/Services/UserCredentialService.dart';
 import 'package:flutter_application_1/constant.dart';
+import 'package:http/http.dart';
 
 class PostUI extends StatefulWidget {
   final Post post;
@@ -31,6 +35,18 @@ class PostUI extends StatefulWidget {
 
 class _PostUIState extends State<PostUI> {
   ReactionType _reactionType = ReactionType.none;
+  ReactionType get reaction {
+    return _reaction?.reaction ?? _reactionType;
+  }
+
+  set reaction(value) {
+    if (_reaction == null)
+      _reactionType = value;
+    else
+      _reaction.reaction = value;
+    onReactionChanged();
+  }
+
   double footerFontSize = 12;
   double footerIconSize = 27;
 
@@ -40,10 +56,42 @@ class _PostUIState extends State<PostUI> {
   ImageProvider _avatarImage;
 
   _PostUIState() {}
-
+  db.CollectionReference reactionPath;
+  db.Query reactionQuery;
+  Reaction _reaction;
   @override
   void initState() {
     super.initState();
+
+    reactionPath = db.FirebaseFirestore.instance
+        .collection("post")
+        .doc(widget.post.id)
+        .collection("reaction");
+    reactionQuery = reactionPath.where("owner",
+        isEqualTo: UserCredentialService.instance.model);
+    reactionQuery.get().then((value) {
+      if (value == null || value.size == 0) return;
+      setState(() {
+        _reaction = Reaction.fromJson(value.docs[0].data());
+
+        if (_reaction == null) {
+          _reaction = new Reaction();
+          _reaction.item = widget.post.id;
+          _reaction.owner = UserCredentialService.instance.model.username;
+          _reaction.reaction = ReactionType.none;
+          _reaction.createdDate = DateTime.now();
+
+          _reaction.upload(reactionPath);
+        }
+      });
+    });
+
+    reactionQuery.snapshots().listen((value) {
+      if (value == null || value.docs == null || value.docs.length == 0) return;
+      setState(() {
+        _reaction = Reaction.fromJson(value.docs[0].data());
+      });
+    });
 
     // widget.group.getAvatar().then((value) => this.setState(() {
     //       _avatarImage = value;
@@ -51,25 +99,25 @@ class _PostUIState extends State<PostUI> {
   }
 
   void _handleLovedTap() {
-    if (_reactionType == ReactionType.loved) {
+    if (reaction == ReactionType.loved) {
       setState(() {
-        _reactionType = ReactionType.none;
+        reaction = ReactionType.none;
       });
     } else {
       setState(() {
-        _reactionType = ReactionType.loved;
+        reaction = ReactionType.loved;
       });
     }
   }
 
   void _handleNotLoveTap() {
-    if (_reactionType == ReactionType.notloved) {
+    if (reaction == ReactionType.hated) {
       setState(() {
-        _reactionType = ReactionType.none;
+        reaction = ReactionType.none;
       });
     } else {
       setState(() {
-        _reactionType = ReactionType.notloved;
+        reaction = ReactionType.hated;
       });
     }
   }
@@ -85,6 +133,10 @@ class _PostUIState extends State<PostUI> {
                     postUI: this.widget,
                   )));
     }
+  }
+
+  void onReactionChanged() {
+    _reaction.upload(reactionPath);
   }
 
   void _handleUsernameTap() {}
@@ -227,11 +279,11 @@ class _PostUIState extends State<PostUI> {
                 GestureDetector(
                   onTap: _handleLovedTap,
                   child: Icon(
-                    _reactionType == ReactionType.loved
+                    reaction == ReactionType.loved
                         ? CupertinoIcons.heart_circle_fill
                         : CupertinoIcons.heart_circle,
                     size: this.footerIconSize * 1.2,
-                    color: _reactionType == ReactionType.loved
+                    color: reaction == ReactionType.loved
                         ? Colors.redAccent.withAlpha(200)
                         : Colors.white54,
                   ),
@@ -244,9 +296,9 @@ class _PostUIState extends State<PostUI> {
                           letterSpacing: 1.2,
                           wordSpacing: 2,
                           fontWeight: FontWeight.w900,
-                          color: _reactionType == ReactionType.none
+                          color: reaction == ReactionType.none
                               ? Colors.white54
-                              : _reactionType == ReactionType.loved
+                              : reaction == ReactionType.loved
                                   ? Colors.redAccent.withAlpha(200)
                                   : Colors.blue.withAlpha(200))),
                 ),
@@ -255,11 +307,11 @@ class _PostUIState extends State<PostUI> {
                   child: GestureDetector(
                     onTap: _handleNotLoveTap,
                     child: Icon(
-                      _reactionType == ReactionType.notloved
+                      reaction == ReactionType.hated
                           ? CupertinoIcons.heart_slash_circle_fill
                           : CupertinoIcons.heart_slash_circle,
                       size: this.footerIconSize * 1.2,
-                      color: _reactionType == ReactionType.notloved
+                      color: reaction == ReactionType.hated
                           ? Colors.blue.withAlpha(200)
                           : Colors.white54,
                     ),

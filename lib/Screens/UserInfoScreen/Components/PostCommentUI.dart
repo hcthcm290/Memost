@@ -62,13 +62,13 @@ class _PostCommentUIState extends State<PostCommentUI> {
   }
 
   void _handleNotLoveTap() {
-    if (_reactionType == ReactionType.notloved) {
+    if (_reactionType == ReactionType.hated) {
       setState(() {
         _reactionType = ReactionType.none;
       });
     } else {
       setState(() {
-        _reactionType = ReactionType.notloved;
+        _reactionType = ReactionType.hated;
       });
     }
   }
@@ -256,11 +256,11 @@ class _PostCommentUIState extends State<PostCommentUI> {
                   child: GestureDetector(
                     onTap: _handleNotLoveTap,
                     child: Icon(
-                      _reactionType == ReactionType.notloved
+                      _reactionType == ReactionType.hated
                           ? CupertinoIcons.heart_slash_circle_fill
                           : CupertinoIcons.heart_slash_circle,
                       size: this.footerIconSize * 1.2,
-                      color: _reactionType == ReactionType.notloved
+                      color: _reactionType == ReactionType.hated
                           ? Colors.blue.withAlpha(200)
                           : Colors.white54,
                     ),

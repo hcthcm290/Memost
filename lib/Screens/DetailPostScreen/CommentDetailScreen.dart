@@ -3,9 +3,13 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/Model/Comment.dart';
+import 'package:flutter_application_1/Model/UserModel.dart';
 import 'package:flutter_application_1/Screens/DetailPostScreen/Components/CommentTile.dart';
 import 'package:flutter_application_1/Screens/DetailPostScreen/DetailPostScreen.dart';
+import 'package:flutter_application_1/Services/UserCredentialService.dart';
 import 'package:flutter_application_1/constant.dart';
+
+import 'package:cloud_firestore/cloud_firestore.dart' as db;
 
 class CommentDetailScreen extends StatefulWidget {
   CommentDetailScreen({Key key, this.comment, this.autoFocusInput = false})
@@ -24,6 +28,10 @@ class _CommentDetailScreenState extends State<CommentDetailScreen> {
   ImageProvider _imageInComment;
   File _fileImageInComment;
 
+  Comment comment() => widget.comment;
+  UserModel userModel;
+  db.QuerySnapshot snapshot;
+
   @override
   void initState() {
     // TODO: implement initState
@@ -31,6 +39,40 @@ class _CommentDetailScreenState extends State<CommentDetailScreen> {
     inputController.addListener(_handleInputCommentChange);
 
     // Todo: Fetch subcomment for comment
+    UserCredentialService.convertToUserModel(
+            UserCredentialService.instance.currentUser)
+        .then((value) {
+      setState(() {
+        userModel = value;
+      });
+    });
+    UserCredentialService.instance.onAuthChange.listen((user) async {
+      userModel = await UserCredentialService.convertToUserModel(user);
+
+      setState(() {});
+    });
+
+    var query = db.FirebaseFirestore.instance
+        .collection("post")
+        .doc(comment().post.id)
+        .collection("comment")
+        .where("isDeleted", isNotEqualTo: "true")
+        .where("prevComment", isEqualTo: comment().id);
+
+    query.get().then((value) {
+      this.setState(() {
+        snapshot = value;
+        loadComment();
+      });
+    });
+    query.snapshots().listen((value) {
+      this.setState(() {
+        snapshot = value;
+        loadComment();
+      });
+    });
+
+/*
     Comment commentWithImage = Comment();
     commentWithImage.content = "Comment with image";
     commentWithImage.createdDate = DateTime.now();
@@ -40,6 +82,14 @@ class _CommentDetailScreenState extends State<CommentDetailScreen> {
 
     subComments.add(commentWithImage);
     subComments.add(widget.comment);
+    // */
+  }
+
+  void loadComment() {
+    subComments.clear();
+    subComments = snapshot.docs
+        .map((e) => Comment.fromJson(e.data(), comment().post))
+        .toList();
   }
 
   void _handleInputCommentChange() {
@@ -64,7 +114,17 @@ class _CommentDetailScreenState extends State<CommentDetailScreen> {
   }
 
   void _postComment() {
-    // Todo: Post subcomment to current widget.comment
+    Comment cmt = new Comment();
+    cmt.content = inputController.text;
+    cmt.createdDate = DateTime.now();
+    cmt.isDeleted = "false";
+    cmt.owner = userModel.username;
+    cmt.post = comment().post;
+    cmt.prevComment = comment().id;
+    cmt.upload().then((_) {
+      if (_fileImageInComment != null)
+        cmt.setImage(_fileImageInComment.readAsBytesSync());
+    });
   }
 
   @override

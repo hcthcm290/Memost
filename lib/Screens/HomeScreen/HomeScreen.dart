@@ -81,6 +81,13 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
+  int itemCount() {
+    if (snapshot == null || snapshot.size == 0)
+      return 0;
+    else
+      return snapshot.size * 2 - 1;
+  }
+
   @override
   Widget build(BuildContext context) {
     _context = context;
@@ -105,10 +112,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               }
               return PostUI(
-                post: Post.fromJson(snapshot?.docs[index]?.data()),
+                post: Post.fromJson(snapshot?.docs[index ~/ 2]?.data()),
               );
             },
-            itemCount: snapshot?.size ?? 0,
+            itemCount: itemCount(),
           ),
           if (_isBannerAdReady)
             Align(
