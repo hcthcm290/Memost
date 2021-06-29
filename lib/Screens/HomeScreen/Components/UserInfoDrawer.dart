@@ -62,9 +62,9 @@ class _UserInfoDrawerState extends State<UserInfoDrawer> {
           DateTime.now().difference(this.widget.userModel.createdDate);
 
       if (ageDuration.inDays >= 365) {
-        return "${ageDuration.inDays / 365} y";
+        return "${ageDuration.inDays ~/ 365} y";
       } else if (ageDuration.inDays >= 30) {
-        return "${ageDuration.inDays / 30} m";
+        return "${ageDuration.inDays ~/ 30} m";
       } else {
         return "${ageDuration.inDays} d";
       }

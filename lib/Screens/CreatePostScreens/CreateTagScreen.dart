@@ -35,6 +35,19 @@ class _CreateTagPostScreenState extends State<CreateTagPostScreen> {
     tag1Ctrl.addListener(handleTag1Input);
     tag2Ctrl.addListener(handleTag2Input);
     tag3Ctrl.addListener(handleTag3Input);
+
+    UserCredentialService.convertToUserModel(
+            UserCredentialService.instance.currentUser)
+        .then((value) {
+      setState(() {
+        userModel = value;
+      });
+    });
+    UserCredentialService.instance.onAuthChange.listen((user) async {
+      userModel = await UserCredentialService.convertToUserModel(user);
+
+      setState(() {});
+    });
   }
 
   void handleTag1Input() {}
@@ -51,12 +64,6 @@ class _CreateTagPostScreenState extends State<CreateTagPostScreen> {
     UserCredentialService.convertToUserModel(
         UserCredentialService.instance.currentUser);
     // */
-    UserCredentialService.instance.onAuthChange.listen((user) async {
-      userModel = await UserCredentialService.convertToUserModel(user);
-
-      setState(() {});
-    });
-
     Post post = new Post();
     post.createdDate = DateTime.now();
     post.isDeleted = "false";

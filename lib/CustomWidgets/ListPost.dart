@@ -3,9 +3,12 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart' as db;
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/CustomWidgets/NullableImage.dart';
 import 'package:flutter_application_1/Model/Post.dart';
 import 'package:flutter_application_1/Model/Group.dart';
 import 'package:flutter_application_1/Model/Reaction_Type.dart';
@@ -25,8 +28,6 @@ class PostUI extends StatefulWidget {
   @override
   _PostUIState createState() => _PostUIState();
 }
-
-enum ReactionType { none, loved, notloved }
 
 class _PostUIState extends State<PostUI> {
   ReactionType _reactionType = ReactionType.none;
@@ -323,21 +324,34 @@ class _PostUIState extends State<PostUI> {
 }
 
 class ListPostUI extends StatefulWidget {
-  final Group group;
-
-  ListPostUI({@required this.group});
+  ListPostUI({Key key}) : super(key: key);
 
   @override
   _ListPostUIState createState() => _ListPostUIState();
 }
 
 class _ListPostUIState extends State<ListPostUI> {
-  Group group() => widget.group;
-  Post post = Post();
+  db.QuerySnapshot snapshot;
+
+  _ListPostUIState() {
+    var query = db.FirebaseFirestore.instance
+        .collection("post")
+        .where("isDeleted", isNotEqualTo: "true");
+    query.get().then((value) {
+      this.setState(() {
+        snapshot = value;
+      });
+    });
+    query.snapshots().listen((value) {
+      this.setState(() {
+        snapshot = value;
+      });
+    });
+  }
 
   Widget itemBuilder(BuildContext context, int index) {
     return PostUI(
-      post: post,
+      post: Post.fromJson(snapshot.docs[index].data()),
     );
   }
 
@@ -345,18 +359,13 @@ class _ListPostUIState extends State<ListPostUI> {
         height: 10.0,
       );
 
-  int itemCount = 10;
+  int itemCount() => snapshot.size;
   static int _computeActualChildCount(int itemCount) {
     return max(0, itemCount * 2 - 1);
   }
 
   @override
   Widget build(BuildContext context) {
-    post.id = "001";
-    post.image = "https://www.w3schools.com/w3css/img_lights.jpg";
-    post.owner = "basafish";
-    post.title = "First post ever";
-
     return /*
         Container(
       child: Expanded(
@@ -386,7 +395,7 @@ class _ListPostUIState extends State<ListPostUI> {
           }
           return widget;
         },
-        childCount: _computeActualChildCount(itemCount),
+        childCount: _computeActualChildCount(itemCount()),
       ),
 
       /*

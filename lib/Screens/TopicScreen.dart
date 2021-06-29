@@ -135,7 +135,7 @@ class _TopicScreenState extends State<TopicScreen> {
 
   Widget listPost() {
     if (group != null)
-      return ListPostUI(group: group);
+      return ListPostUI();
     else
       return null;
   }

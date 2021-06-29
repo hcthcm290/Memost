@@ -10,7 +10,6 @@ class Post {
   DateTime createdDate;
   String title;
   String isDeleted;
-  @Deprecated("Use Get/SetImage instead")
   String image;
   Post();
   factory Post.fromJson(Map<String, dynamic> json) {
@@ -19,12 +18,14 @@ class Post {
     a.id = json["id"];
     a.owner = json["owner"];
     a.title = json["title"];
+    a.image = json["image"];
     try {
       a.createdDate = DateTime.parse(json["createdDate"]);
     } catch (e) {}
     a.isDeleted = json["isDeleted"];
     return a;
   }
+
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
     json["id"] = id;
@@ -32,37 +33,46 @@ class Post {
     json["title"] = title;
     json["createdDate"] = createdDate?.toString();
     json["isDeleted"] = isDeleted;
+    json["image"] = image;
     return json;
   }
 
   Future<ImageProvider> getImage() => FirebaseStorage.instance
-      .ref("Post")
+      .ref("post")
       .child(id)
       .child("image.png")
       .getData()
       .then((value) => MemoryImage(value));
 
   void setImage(Uint8List i) => FirebaseStorage.instance
-      .ref("Post")
-      .child(id)
-      .child("image.png")
-      .putData(i);
+          .ref("post")
+          .child(id)
+          .child("image.png")
+          .putData(i)
+          .then((value) {
+        value.ref.getDownloadURL().then((value) {
+          image = value;
+          if (id != null)
+            db.FirebaseFirestore.instance.collection("post").doc(id).set(
+                <String, dynamic>{"image": value}, db.SetOptions(merge: true));
+        });
+      });
   Future<void> upload() {
     if (id != null && id != "")
       return db.FirebaseFirestore.instance
-          .collection("Post")
+          .collection("post")
           .doc(id)
           .set(toJson());
     else {
       return db.FirebaseFirestore.instance
-          .collection("Post")
+          .collection("post")
           .add(toJson())
           .then((docRef) {
         id = docRef.id;
         return db.FirebaseFirestore.instance
-            .collection("Post")
+            .collection("post")
             .doc(id)
-            .set(<String, dynamic>{"id": id});
+            .set(<String, dynamic>{"id": id}, db.SetOptions(merge: true));
       });
     }
   }
