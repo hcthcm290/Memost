@@ -8,6 +8,7 @@ import 'package:flutter_application_1/Model/UserModel.dart';
 import 'package:flutter_application_1/Screens/DetailPostScreen/DetailPostScreen.dart';
 import 'package:flutter_application_1/Screens/UserInfoScreen/UserCommentDetailScreen.dart';
 import 'package:flutter_application_1/constant.dart';
+import 'package:flutter_application_1/Model/Reaction_Type.dart';
 
 // this is a special post ui that instead of navigate to CommentDetailScreen,
 // it navigate to UserCommentDetailScreen
