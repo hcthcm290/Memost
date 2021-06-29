@@ -1,29 +1,23 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/CustomWidgets/ListPost.dart';
 import 'package:flutter_application_1/Model/Comment.dart';
-import 'package:flutter_application_1/Model/Post.dart';
 import 'package:flutter_application_1/Screens/DetailPostScreen/CommentDetailScreen.dart';
 import 'package:flutter_application_1/Screens/DetailPostScreen/Components/CommentTile.dart';
 import 'package:flutter_application_1/Screens/DetailPostScreen/Components/SortComment.dart';
+import 'package:flutter_application_1/Screens/DetailPostScreen/DetailPostScreen.dart';
 import 'package:flutter_application_1/constant.dart';
-import 'dart:io';
 
-import 'package:image_picker/image_picker.dart';
-
-class DetailPostScreen extends StatefulWidget {
-  DetailPostScreen({
-    Key key,
-    this.postUI,
-  }) : super(key: key);
-
+class NotificationPostDetail extends StatefulWidget {
+  const NotificationPostDetail({Key key, this.postUI}) : super(key: key);
   final PostUI postUI;
-
   @override
-  _DetailPostScreenState createState() => _DetailPostScreenState();
+  _NotificationPostDetailState createState() => _NotificationPostDetailState();
 }
 
-class _DetailPostScreenState extends State<DetailPostScreen> {
+class _NotificationPostDetailState extends State<NotificationPostDetail> {
   String _currentCommentType = "Hot comment";
 
   Comment _comment;
@@ -38,50 +32,12 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
     _comment.content = "Wow man, best meme, thank you";
     _comment.owner = "basa";
     _comment.id = "cauicb1265";
-
-    buildScreen();
-
     inputController.addListener(_handleInputCommentChange);
   }
 
   ImageProvider _imageInComment;
   File _fileImageInComment;
   TextEditingController inputController = TextEditingController();
-  List<Widget> _allComment = [];
-  List<Widget> _mainScreenComponent = [];
-
-  Future<void> loadAllComment() async {
-    // Todo:
-    // load all comment of the post,
-    // remember to bring the comment of this.widget.userModel to front
-
-    _comment = Comment();
-    _comment.createdDate = DateTime.now();
-    _comment.content = "Wow man, best meme, thank you";
-    _comment.owner = "basa";
-    _comment.id = "cauicb1265";
-
-    _allComment.add(CommentTile(
-      comment: _comment,
-      numberOfReplies: 2,
-      onReplyClicked: onTapReply,
-    ));
-    _allComment.add(CommentTile(
-      comment: _comment,
-      numberOfReplies: 2,
-      onReplyClicked: onTapReply,
-    ));
-    _allComment.add(CommentTile(
-      comment: _comment,
-      numberOfReplies: 2,
-      onReplyClicked: onTapReply,
-    ));
-    _allComment.add(CommentTile(
-      comment: _comment,
-      numberOfReplies: 2,
-      onReplyClicked: onTapReply,
-    ));
-  }
 
   void _handleInputCommentChange() {
     // only update ui when input controller change from no text to text to save performance
@@ -132,48 +88,58 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
             children: [Text("Post")]),
       ),
       body: Stack(children: [
-        ListView.builder(
-          itemBuilder: (context, index) {
-            if (index < _mainScreenComponent.length) {
-              return _mainScreenComponent[index];
-            }
-          },
+        SingleChildScrollView(
+          child: Column(
+            children: [
+              this.widget.postUI,
+              GestureDetector(
+                onTap: _onTapChangeCommentType,
+                child: SortComment(currentCommentType: _currentCommentType),
+              ),
+              CommentTile(
+                comment: _comment,
+                numberOfReplies: 2,
+                onReplyClicked: onTapReply,
+              ),
+              Divider(
+                height: 2,
+                thickness: 2,
+              ),
+              CommentTile(
+                comment: _comment,
+                onReplyClicked: onTapReply,
+              ),
+              Divider(
+                height: 2,
+                thickness: 2,
+              ),
+              CommentTile(
+                comment: _comment,
+                numberOfReplies: 2,
+                onReplyClicked: onTapReply,
+              ),
+              Divider(
+                height: 2,
+                thickness: 2,
+              ),
+              CommentTile(
+                comment: _comment,
+                numberOfReplies: 32,
+                onReplyClicked: onTapReply,
+              ),
+
+              // Add this size box to prevent the bottom comment ovelap the CommentTile
+              Container(
+                height: 110,
+                color: Colors.black,
+              )
+            ],
+          ),
         ),
         // Bottom comment input field
         buildBottomCommentInput(context),
       ]),
     );
-  }
-
-  Future<void> buildScreen() async {
-    List<Widget> screenWidget = [
-      this.widget.postUI,
-      GestureDetector(
-          onTap: _onTapChangeCommentType,
-          child: SortComment(currentCommentType: _currentCommentType)),
-    ];
-
-    setState(() {
-      _mainScreenComponent = screenWidget;
-    });
-
-    await loadAllComment();
-    for (int i = 0; i < _allComment.length; i++) {
-      screenWidget.add(_allComment[i]);
-      screenWidget.add(Divider(
-        height: 1,
-        thickness: 1,
-      ));
-    }
-
-    screenWidget.add(Container(
-      height: 150,
-      color: Colors.black,
-    ));
-
-    setState(() {
-      _mainScreenComponent = screenWidget;
-    });
   }
 
   Align buildBottomCommentInput(BuildContext context) {
@@ -300,110 +266,6 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
               ),
             )
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class ChooseImageTypeModel extends StatefulWidget {
-  ChooseImageTypeModel({
-    Key key,
-    @required this.onChooseImage,
-  }) : super(key: key);
-
-  final Function(File imageProvider) onChooseImage;
-  @override
-  _ChooseImageTypeModelState createState() => _ChooseImageTypeModelState();
-}
-
-class _ChooseImageTypeModelState extends State<ChooseImageTypeModel> {
-  final _imagePicker = ImagePicker();
-
-  void _fromLibrary() async {
-    final image = await _imagePicker.getImage(source: ImageSource.gallery);
-
-    print(image);
-    if (image != null) {
-      this.widget.onChooseImage(File(image.path));
-    }
-  }
-
-  void _takeAPhoto() async {
-    final image = await _imagePicker.getImage(source: ImageSource.camera);
-
-    print(image);
-    if (image != null) {
-      this.widget.onChooseImage(File(image.path));
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 180,
-      decoration: BoxDecoration(
-          color: Color.fromARGB(255, 40, 40, 40),
-          borderRadius: BorderRadius.circular(defaultPadding)),
-      child: Padding(
-        padding: EdgeInsets.only(top: defaultPadding),
-        child: Material(
-          color: Colors.transparent,
-          child: Column(
-            children: [
-              InkWell(
-                splashFactory: InkRipple.splashFactory,
-                onTap: _fromLibrary,
-                child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: defaultPadding),
-                  child: Row(
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.only(left: defaultPadding * 1.5),
-                        child: Icon(CupertinoIcons.arrow_up_doc,
-                            size: 30, color: Colors.blue),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.only(left: defaultPadding * 1.5),
-                        child: Text(
-                          "Choose from library",
-                          style: Theme.of(context)
-                              .textTheme
-                              .headline6
-                              .copyWith(color: Colors.blue),
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-              ),
-              InkWell(
-                splashFactory: InkRipple.splashFactory,
-                onTap: _takeAPhoto,
-                child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: defaultPadding),
-                  child: Row(
-                    children: [
-                      Padding(
-                          padding: EdgeInsets.only(left: defaultPadding * 1.5),
-                          child: Icon(CupertinoIcons.camera,
-                              size: 30, color: Colors.green)),
-                      Padding(
-                        padding: EdgeInsets.only(left: defaultPadding * 1.5),
-                        child: Text(
-                          "Take a photo",
-                          style: Theme.of(context)
-                              .textTheme
-                              .headline6
-                              .copyWith(color: Colors.green),
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-              )
-            ],
-          ),
         ),
       ),
     );
