@@ -1,4 +1,3 @@
-import 'dart:ffi';
 import 'dart:io';
 import 'dart:math';
 
@@ -68,26 +67,37 @@ class _PostUIState extends State<PostUI> {
         .doc(widget.post.id)
         .collection("reaction");
     reactionQuery = reactionPath.where("owner",
-        isEqualTo: UserCredentialService.instance.model);
-    reactionQuery.get().then((value) {
-      if (value == null || value.size == 0) return;
-      setState(() {
-        _reaction = Reaction.fromJson(value.docs[0].data());
+        isEqualTo: UserCredentialService.instance.model.id);
 
-        if (_reaction == null) {
-          _reaction = new Reaction();
-          _reaction.item = widget.post.id;
-          _reaction.owner = UserCredentialService.instance.model.username;
-          _reaction.reaction = ReactionType.none;
-          _reaction.createdDate = DateTime.now();
+    try {
+      reactionQuery.get().then((value) {
+        if (value == null || value.size == 0) {
+          if (_reaction == null) {
+            _reaction = new Reaction();
+            _reaction.item = widget.post.id;
+            _reaction.owner = UserCredentialService.instance.model.id;
+            _reaction.reaction = ReactionType.none;
+            _reaction.createdDate = DateTime.now();
 
-          _reaction.upload(reactionPath);
+            _reaction.upload(reactionPath);
+          }
+          return;
+        } else {
+          setState(() {
+            _reaction = Reaction.fromJson(value.docs[0].data());
+          });
         }
       });
-    });
+    } catch (e) {
+      print(e);
+    }
 
     reactionQuery.snapshots().listen((value) {
       if (value == null || value.docs == null || value.docs.length == 0) return;
+      if (!mounted) {
+        _reaction = Reaction.fromJson(value.docs[0].data());
+        return;
+      }
       setState(() {
         _reaction = Reaction.fromJson(value.docs[0].data());
       });

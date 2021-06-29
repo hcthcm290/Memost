@@ -78,8 +78,6 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
     _comment.owner = "basa";
     _comment.id = "cauicb1265";
 
-    buildScreen();
-
     inputController.addListener(_handleInputCommentChange);
   }
 
