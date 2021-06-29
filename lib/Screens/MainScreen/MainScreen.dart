@@ -8,6 +8,7 @@ import 'package:flutter_application_1/Screens/CreatePostScreens/LoginModal.dart'
 import 'package:flutter_application_1/Screens/CreatePostScreens/UploadTypeModal.dart';
 import 'package:flutter_application_1/Screens/HomeScreen/HomeScreen.dart';
 import 'package:flutter_application_1/Screens/NotificationScreens/NotificationScreen.dart';
+import 'package:flutter_application_1/Screens/TagScreens/TagScreen.dart';
 import 'package:flutter_application_1/Services/UserCredentialService.dart';
 import 'package:provider/provider.dart';
 
@@ -105,7 +106,7 @@ class _MainScreenState extends State<MainScreen> {
               child: HomeScreen(),
               padding: EdgeInsets.only(bottom: 2),
             ),
-            _groupPage,
+            TagScreen(),
             NotificationScreen(),
             _explorePage
           ],
