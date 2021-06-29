@@ -2,6 +2,9 @@ import 'dart:io';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_application_1/Model/Post.dart';
+import 'package:flutter_application_1/Model/UserModel.dart';
+import 'package:flutter_application_1/Services/UserCredentialService.dart';
 import 'package:flutter_application_1/constant.dart';
 
 class CreateTagPostScreen extends StatefulWidget {
@@ -20,6 +23,7 @@ class _CreateTagPostScreenState extends State<CreateTagPostScreen> {
   TextEditingController tag2Ctrl;
   TextEditingController tag3Ctrl;
   bool _processing = false;
+  UserModel userModel;
 
   @override
   void initState() {
@@ -31,6 +35,19 @@ class _CreateTagPostScreenState extends State<CreateTagPostScreen> {
     tag1Ctrl.addListener(handleTag1Input);
     tag2Ctrl.addListener(handleTag2Input);
     tag3Ctrl.addListener(handleTag3Input);
+
+    UserCredentialService.convertToUserModel(
+            UserCredentialService.instance.currentUser)
+        .then((value) {
+      setState(() {
+        userModel = value;
+      });
+    });
+    UserCredentialService.instance.onAuthChange.listen((user) async {
+      userModel = await UserCredentialService.convertToUserModel(user);
+
+      setState(() {});
+    });
   }
 
   void handleTag1Input() {}
@@ -43,6 +60,17 @@ class _CreateTagPostScreenState extends State<CreateTagPostScreen> {
     });
 
     // Todo: add this post to firebase
+    /*
+    UserCredentialService.convertToUserModel(
+        UserCredentialService.instance.currentUser);
+    // */
+    Post post = new Post();
+    post.createdDate = DateTime.now();
+    post.isDeleted = "false";
+    post.owner = userModel.username;
+    post.title = widget.title;
+    post.upload().then((_) =>
+        widget.image.readAsBytes().then((value) => post.setImage(value)));
 
     setState(() {
       _processing = false;

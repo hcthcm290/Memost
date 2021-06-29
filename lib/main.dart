@@ -11,6 +11,7 @@ import 'package:flutter_application_1/constant.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:provider/provider.dart';
+import 'Screens/TopicScreen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,6 +33,7 @@ class MyApp extends StatelessWidget {
           canvasColor: secondaryColor,
           bottomSheetTheme:
               BottomSheetThemeData(backgroundColor: Colors.transparent)),
+      //home: TopicScreen(groupName: "Memes"),
       home: MainScreen(),
     );
   }
