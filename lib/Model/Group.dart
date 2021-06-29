@@ -45,14 +45,14 @@ class Group {
     return json;
   }
 
-  Future<ImageProvider> getAvatar() => Future(
-      () => NetworkImage("https://www.w3schools.com/w3css/img_lights.jpg"));
-  /*/  
+  Future<ImageProvider> getAvatar() =>
+      //Future(() => NetworkImage("https://www.w3schools.com/w3css/img_lights.jpg"));
+      //*
       FirebaseStorage.instance
-      .ref(name)
-      .child("Avatar.png")
-      .getData()
-      .then((value) => MemoryImage(value));
+          .ref(name)
+          .child("Avatar.png")
+          .getData()
+          .then((value) => MemoryImage(value));
   // */
   void setAvatar(Uint8List i) =>
       FirebaseStorage.instance.ref(name).child("Avatar.png").putData(i);

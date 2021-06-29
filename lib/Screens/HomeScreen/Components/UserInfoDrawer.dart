@@ -11,8 +11,7 @@ import 'package:flutter_application_1/constant.dart';
 import 'package:provider/provider.dart';
 
 class UserInfoDrawer extends StatefulWidget {
-  UserInfoDrawer({Key key, this.userModel = null, this.onTapClose})
-      : super(key: key);
+  UserInfoDrawer({Key key, this.userModel, this.onTapClose}) : super(key: key);
 
   UserModel userModel;
   final VoidCallback onTapClose;
@@ -72,9 +71,9 @@ class _UserInfoDrawerState extends State<UserInfoDrawer> {
           DateTime.now().difference(this.widget.userModel.createdDate);
 
       if (ageDuration.inDays >= 365) {
-        return "${ageDuration.inDays / 365} y";
+        return "${ageDuration.inDays ~/ 365} y";
       } else if (ageDuration.inDays >= 30) {
-        return "${ageDuration.inDays / 30} m";
+        return "${ageDuration.inDays ~/ 30} m";
       } else {
         return "${ageDuration.inDays} d";
       }

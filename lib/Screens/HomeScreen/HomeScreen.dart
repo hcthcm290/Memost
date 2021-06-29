@@ -9,6 +9,7 @@ import 'package:flutter_application_1/Services/UserCredentialService.dart';
 import 'package:flutter_application_1/constant.dart';
 import 'package:flutter_application_1/adHelper.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:cloud_firestore/cloud_firestore.dart' as db;
 
 class HomeScreen extends StatefulWidget {
   HomeScreen({Key key}) : super(key: key);
@@ -22,6 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   UserModel userModel = null;
   BuildContext _context;
+  db.QuerySnapshot snapshot;
 
   BannerAd _bannerAd;
   bool _isBannerAdReady = false;
@@ -56,6 +58,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
       setState(() {});
     });
+
+    var query = db.FirebaseFirestore.instance
+        .collection("post")
+        .where("isDeleted", isNotEqualTo: "true");
+    query.get().then((value) {
+      this.setState(() {
+        snapshot = value;
+      });
+    });
+    query.snapshots().listen((value) {
+      this.setState(() {
+        snapshot = value;
+      });
+    });
   }
 
   void dispose() {
@@ -88,14 +104,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: Color.fromARGB(255, 15, 15, 15),
                 );
               }
-
-              Post post = Post();
-              post.owner = "Basa102";
-              post.title = "The funniest meme i have ever seen";
-              post.image =
-                  "https://preview.redd.it/lwf895ptel571.png?width=960&crop=smart&auto=webp&s=f11838f1f6f95ae4da8fe9e1196396c6b15e0074";
-              return PostUI(post: post);
+              return PostUI(
+                post: Post.fromJson(snapshot?.docs[index]?.data()),
+              );
             },
+            itemCount: snapshot?.size ?? 0,
           ),
           if (_isBannerAdReady)
             Align(

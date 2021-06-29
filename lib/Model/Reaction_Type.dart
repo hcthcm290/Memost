@@ -1,4 +1,1 @@
-class ReactionType {
-  String id;
-  String description;
-}
+enum ReactionType { none, loved, notloved }
