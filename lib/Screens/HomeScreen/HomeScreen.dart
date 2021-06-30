@@ -62,9 +62,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
     var query = db.FirebaseFirestore.instance
         .collection("post")
-        .where("isDeleted", isNotEqualTo: "true");
-    // query = query.where("createdDate", isNotEqualTo: "");
-    // query = query.orderBy("createDate");
+        .where("isDeleted", isEqualTo: "false")
+        .where("createdDate", isNotEqualTo: "")
+        .orderBy("createdDate", descending: true)
+        .limit(20);
     query.get().then((value) {
       snapshot = value;
 
@@ -129,8 +130,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: Color.fromARGB(255, 15, 15, 15),
                   );
                 }
-                //var postUI = Post.fromJson(snapshot?.docs[index ~/ 2]?.data());
-                var postUI = Post.fromJson(snapshotData[index ~/ 2]);
+                var postUI = Post.fromJson(snapshot?.docs[index ~/ 2]?.data());
+                //var postUI = Post.fromJson(snapshotData[index ~/ 2]);
                 return PostUI(
                   key: ValueKey(postUI.id),
                   post: postUI,
