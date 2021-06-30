@@ -234,6 +234,7 @@ class _PostUIState extends State<PostUI> {
 
   String localImgFilePath = "";
   bool _processShare = false;
+  File imageFile = null;
 
   void _handleShareTap() async {
     var result = showDialog(
@@ -251,20 +252,22 @@ class _PostUIState extends State<PostUI> {
       _processShare = true;
     });
     try {
-      if (localImgFilePath == "") {
+      if (imageFile == null) {
         var imageURL = widget.post.image;
         var response = await get(Uri.parse(imageURL));
 
-        localImgFilePath =
-            await ImagePickerSaver.saveFile(fileData: response.bodyBytes);
+        var externalStoragePath = (await getExternalStorageDirectory()).path;
+        imageFile = new File('$externalStoragePath/image.png');
+
+        imageFile.writeAsBytes(response.bodyBytes);
       }
+
+      Share.shareFiles([imageFile.path], subject: "${widget.post.title}");
     } catch (e) {
       print(e);
     }
 
     Navigator.of(context, rootNavigator: true).pop();
-
-    Share.shareFiles([localImgFilePath], subject: "${widget.post.title}");
 
     setState(() {
       _processShare = false;

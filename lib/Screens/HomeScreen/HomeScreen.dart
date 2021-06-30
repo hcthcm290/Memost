@@ -111,8 +111,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: Color.fromARGB(255, 15, 15, 15),
                 );
               }
+              var postUI = Post.fromJson(snapshot?.docs[index ~/ 2]?.data());
               return PostUI(
-                post: Post.fromJson(snapshot?.docs[index ~/ 2]?.data()),
+                key: ValueKey(postUI.id),
+                post: postUI,
               );
             },
             itemCount: itemCount(),
