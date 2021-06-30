@@ -29,7 +29,7 @@ class _CommentDetailScreenState extends State<CommentDetailScreen> {
   File _fileImageInComment;
 
   Comment comment() => widget.comment;
-  UserModel userModel;
+  UserModel get userModel => UserCredentialService.instance.model;
   db.QuerySnapshot snapshot;
 
   @override
@@ -39,6 +39,7 @@ class _CommentDetailScreenState extends State<CommentDetailScreen> {
     inputController.addListener(_handleInputCommentChange);
 
     // Todo: Fetch subcomment for comment
+    /*
     UserCredentialService.convertToUserModel(
             UserCredentialService.instance.currentUser)
         .then((value) {
@@ -51,6 +52,7 @@ class _CommentDetailScreenState extends State<CommentDetailScreen> {
 
       setState(() {});
     });
+    // */
 
     var query = db.FirebaseFirestore.instance
         .collection("post")

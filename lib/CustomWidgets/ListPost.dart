@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
@@ -44,16 +45,40 @@ class _PostUIState extends State<PostUI> {
   set reaction(value) {
     if (_reaction == null)
       _reactionType = value;
-    else
+    else {
       _reaction.reaction = value;
-    onReactionChanged();
+      onReactionChanged();
+    }
   }
 
   double footerFontSize = 12;
   double footerIconSize = 27;
 
-  String _likeCount = '1.8K';
-  String _commentCount = '35K';
+  int likeCount;
+  String get _likeCount {
+    if (likeCount == null) return "";
+    if (likeCount > 1000)
+      return (likeCount / 1000).toStringAsPrecision(1) + 'K';
+    else if (likeCount > 1000000)
+      return (likeCount / 1000000).toStringAsPrecision(1) + 'M';
+    else if (likeCount > 1000000000)
+      return (likeCount / 1000000000).toStringAsPrecision(1) + 'B';
+    else
+      return likeCount.toString();
+  }
+
+  int commentCount;
+  String get _commentCount {
+    if (commentCount == null) return "";
+    if (commentCount > 1000)
+      return (commentCount / 1000).toStringAsPrecision(1) + 'K';
+    else if (commentCount > 1000000)
+      return (commentCount / 1000000).toStringAsPrecision(1) + 'M';
+    else if (commentCount > 1000000000)
+      return (commentCount / 1000000000).toStringAsPrecision(1) + 'B';
+    else
+      return commentCount.toString();
+  }
 
   ImageProvider _avatarImage;
 
@@ -61,24 +86,87 @@ class _PostUIState extends State<PostUI> {
   db.CollectionReference reactionPath;
   db.Query reactionQuery;
   Reaction _reaction;
+
   @override
   void initState() {
     super.initState();
+    initReactionQuery();
 
+    reactionUserSubscribtion =
+        UserCredentialService.instance.onAuthChange.listen((user) {
+      initReactionQuery();
+    });
+
+    var query = db.FirebaseFirestore.instance
+        .collection("post")
+        .doc(widget.post.id)
+        .collection("comment")
+        .where("isDeleted", isNotEqualTo: "true");
+
+    query.get().then((value) {
+      this.setState(() {
+        commentCount = value.size;
+      });
+    });
+
+    var query2 = db.FirebaseFirestore.instance
+        .collection("post")
+        .doc(widget.post.id)
+        .collection("reaction");
+    query2.get().then((value) {
+      this.setState(() {
+        var data = value.docs.map((e) => Reaction.fromJson(e.data())).toList();
+        int loved = data
+            .where((element) => element.reaction == ReactionType.loved)
+            .length;
+        int hated = data
+            .where((element) => element.reaction == ReactionType.hated)
+            .length;
+        likeCount = loved - hated;
+      });
+    });
+
+    /* DO NOT LISTEN
+    query.snapshots().listen((value) {
+      this.setState(() {
+        _commentCount = value.size.toString();
+      });
+    });
+    // */
+
+    // widget.group.getAvatar().then((value) => this.setState(() {
+    //       _avatarImage = value;
+    //     }));
+  }
+
+  StreamSubscription reactionQuerySubscribtion;
+  StreamSubscription reactionUserSubscribtion;
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    reactionUserSubscribtion.cancel();
+    reactionQuerySubscribtion?.cancel();
+  }
+
+  void initReactionQuery() {
+    _reaction = null;
     reactionPath = db.FirebaseFirestore.instance
         .collection("post")
         .doc(widget.post.id)
         .collection("reaction");
     reactionQuery = reactionPath.where("owner",
-        isEqualTo: UserCredentialService.instance.model.id);
+        isEqualTo: UserCredentialService.instance.model?.id ??
+            "DO NOT TAKE ANY VALUE");
 
     try {
       reactionQuery.get().then((value) {
         if (value == null || value.size == 0) {
           if (_reaction == null) {
+            if (UserCredentialService.instance.model == null) return;
             _reaction = new Reaction();
             _reaction.item = widget.post.id;
-            _reaction.owner = UserCredentialService.instance.model.id;
+            _reaction.owner = UserCredentialService.instance.model?.id;
             _reaction.reaction = ReactionType.none;
             _reaction.createdDate = DateTime.now();
 
@@ -95,7 +183,8 @@ class _PostUIState extends State<PostUI> {
       print(e);
     }
 
-    reactionQuery.snapshots().listen((value) {
+    reactionQuerySubscribtion?.cancel();
+    reactionQuerySubscribtion = reactionQuery.snapshots().listen((value) {
       if (value == null || value.docs == null || value.docs.length == 0) return;
       if (!mounted) {
         _reaction = Reaction.fromJson(value.docs[0].data());
@@ -105,31 +194,39 @@ class _PostUIState extends State<PostUI> {
         _reaction = Reaction.fromJson(value.docs[0].data());
       });
     });
-
-    // widget.group.getAvatar().then((value) => this.setState(() {
-    //       _avatarImage = value;
-    //     }));
   }
 
   void _handleLovedTap() {
+    if (_reaction == null) return;
     if (reaction == ReactionType.loved) {
       setState(() {
         reaction = ReactionType.none;
+        likeCount--;
       });
     } else {
       setState(() {
+        if (reaction == ReactionType.hated)
+          likeCount += 2;
+        else
+          likeCount++;
         reaction = ReactionType.loved;
       });
     }
   }
 
   void _handleNotLoveTap() {
+    if (_reaction == null) return;
     if (reaction == ReactionType.hated) {
       setState(() {
         reaction = ReactionType.none;
+        likeCount--;
       });
     } else {
       setState(() {
+        if (reaction == ReactionType.loved)
+          likeCount -= 2;
+        else
+          likeCount--;
         reaction = ReactionType.hated;
       });
     }

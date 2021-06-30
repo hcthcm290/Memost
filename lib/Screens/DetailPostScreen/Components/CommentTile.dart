@@ -1,9 +1,15 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/Model/Comment.dart';
+import 'package:flutter_application_1/Model/Reaction.dart';
+import 'package:flutter_application_1/Model/Reaction_Type.dart';
 import 'package:flutter_application_1/Screens/DetailPostScreen/CommentDetailScreen.dart';
+import 'package:flutter_application_1/Services/UserCredentialService.dart';
 import 'package:flutter_application_1/constant.dart';
+import 'package:cloud_firestore/cloud_firestore.dart' as db;
 
 class CommentTile extends StatefulWidget {
   CommentTile(
@@ -25,7 +31,27 @@ class CommentTile extends StatefulWidget {
 
 class _CommentTileState extends State<CommentTile> {
   Comment _comment;
-  bool _commentLiked;
+  bool commentLiked;
+  bool get _commentLiked {
+    if (_reaction == null)
+      return commentLiked;
+    else
+      return _reaction.reaction == ReactionType.loved;
+  }
+
+  set _commentLiked(value) {
+    commentLiked = value;
+    if (_reaction != null) {
+      if (value) {
+        _reaction.reaction = ReactionType.loved;
+      } else
+        _reaction.reaction = ReactionType.none;
+    }
+  }
+
+  db.CollectionReference reactionPath;
+  db.Query reactionQuery;
+  Reaction _reaction;
 
   ImageProvider _getUserAvatar(String userID) {
     // Todo: fetch user avatar from firebase, if user doesnot have avater return default avatar
@@ -37,14 +63,107 @@ class _CommentTileState extends State<CommentTile> {
     return "basa102";
   }
 
-  String _getCommentLikedCount(String commentID) {
+  int _commentLikedCount;
+  String get commentLikedCount {
+    if (_commentLikedCount == null) return "";
+    int count = _commentLikedCount + (_commentLiked ? 1 : 0);
+    if (count > 1000)
+      return (count / 1000).toStringAsPrecision(1) + 'K';
+    else if (count > 1000000)
+      return (count / 1000000).toStringAsPrecision(1) + 'M';
+    else if (count > 1000000000)
+      return (count / 1000000000).toStringAsPrecision(1) + 'B';
+    else
+      return count.toString();
+  }
+
+  Future<void> _getCommentLikedCountOtherThanSelf() async {
     // Todo: Fetch data
-    return "153";
+    var snapshot = await db.FirebaseFirestore.instance
+        .collection("post")
+        .doc(_comment.post.id)
+        .collection("comment")
+        .doc(_comment.id)
+        .collection("reaction")
+        .where("owner",
+            isNotEqualTo: UserCredentialService.instance.model?.id ??
+                "DO NOT DISCARD ANY VALUE")
+        .get();
+    var data = snapshot.docs.map((e) => Reaction.fromJson(e.data())).toList();
+    int loved =
+        data.where((element) => element.reaction == ReactionType.loved).length;
+    int hated =
+        data.where((element) => element.reaction == ReactionType.hated).length;
+    setState(() {
+      _commentLikedCount = loved - hated;
+    });
+    return;
+  }
+
+  StreamSubscription reactionQuerySubscribtion;
+  StreamSubscription reactionUserSubscribtion;
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    reactionUserSubscribtion.cancel();
+    reactionQuerySubscribtion?.cancel();
+  }
+
+  void initReactionQuery() {
+    _reaction = null;
+    reactionPath = db.FirebaseFirestore.instance
+        .collection("post")
+        .doc(_comment.post.id)
+        .collection("comment")
+        .doc(_comment.id)
+        .collection("reaction");
+    reactionQuery = reactionPath.where("owner",
+        isEqualTo: UserCredentialService.instance.model?.id ??
+            "DO NOT TAKE ANY VALUE");
+
+    try {
+      reactionQuery.get().then((value) {
+        if (value == null || value.size == 0) {
+          if (_reaction == null) {
+            if (UserCredentialService.instance.model == null) return;
+            _reaction = new Reaction();
+            _reaction.item = _comment.id;
+            _reaction.owner = UserCredentialService.instance.model?.id;
+            _reaction.reaction = ReactionType.none;
+            _reaction.createdDate = DateTime.now();
+
+            _reaction.upload(reactionPath);
+          }
+          return;
+        } else {
+          setState(() {
+            _reaction = Reaction.fromJson(value.docs[0].data());
+          });
+        }
+      });
+    } catch (e) {
+      print(e);
+    }
+
+    reactionQuerySubscribtion?.cancel();
+    reactionQuerySubscribtion = reactionQuery.snapshots().listen((value) {
+      if (value == null || value.docs == null || value.docs.length == 0) return;
+      if (!mounted) {
+        _reaction = Reaction.fromJson(value.docs[0].data());
+        return;
+      }
+      setState(() {
+        _reaction = Reaction.fromJson(value.docs[0].data());
+      });
+    });
   }
 
   void _handleLikeComment(String commentID) {
+    if (_reaction == null) return;
     // Todo: Push data
     _commentLiked = !_commentLiked;
+    _reaction.upload(reactionPath);
     setState(() {});
   }
 
@@ -84,10 +203,17 @@ class _CommentTileState extends State<CommentTile> {
   void initState() {
     // TODO: implement initState
     super.initState();
+
     _comment = this.widget.comment;
 
-    // Todo: fetch data from server to known if comment was liked or not
-    _commentLiked = false;
+    initReactionQuery();
+
+    reactionUserSubscribtion =
+        UserCredentialService.instance.onAuthChange.listen((user) {
+      initReactionQuery();
+    });
+
+    _getCommentLikedCountOtherThanSelf();
   }
 
   @override
@@ -215,7 +341,7 @@ class _CommentTileState extends State<CommentTile> {
                                     padding: EdgeInsets.only(
                                         left: defaultPadding * 0.75),
                                     child: Text(
-                                      _getCommentLikedCount(_comment.id),
+                                      commentLikedCount ?? "",
                                       style: TextStyle(color: Colors.white70),
                                     )),
                               ],
