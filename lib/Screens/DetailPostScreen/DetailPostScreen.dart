@@ -11,6 +11,7 @@ import 'package:flutter_application_1/Screens/DetailPostScreen/Components/SortCo
 import 'package:flutter_application_1/Services/UserCredentialService.dart';
 import 'package:flutter_application_1/constant.dart';
 import 'dart:io';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart' as db;
 
@@ -68,17 +69,9 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
     query.snapshots().listen((value) {
       this.setState(() {
         snapshot = value;
-        buildScreen();
+        //buildScreen();
       });
     });
-
-    _comment = Comment();
-    _comment.createdDate = DateTime.now();
-    _comment.content = "Wow man, best meme, thank you";
-    _comment.owner = "basa";
-    _comment.id = "cauicb1265";
-
-    buildScreen();
 
     inputController.addListener(_handleInputCommentChange);
   }
@@ -89,6 +82,7 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
   QuerySnapshot snapshot;
   List<Widget> _allComment = [];
   List<Widget> _mainScreenComponent = [];
+  final ItemScrollController itemScrollController = ItemScrollController();
 
   Future<void> loadAllComment() async {
     // Todo:
@@ -102,6 +96,7 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
     for (var item in data.where((element) =>
         element.prevComment == null || element.prevComment == "")) {
       _allComment.add(CommentTile(
+        key: ValueKey(item.id),
         comment: item,
         numberOfReplies:
             data.where((element) => element.prevComment == item.id).length,
@@ -127,9 +122,24 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
     cmt.owner = userModel.username;
     cmt.post = widget.postUI.post;
     cmt.prevComment = "";
-    cmt.upload().then((_) {
+    cmt.upload().then((_) async {
       if (_fileImageInComment != null)
-        cmt.setImage(_fileImageInComment.readAsBytesSync());
+        await cmt.setImage(_fileImageInComment.readAsBytesSync());
+      FocusScope.of(context).unfocus();
+      inputController.text = "";
+      _imageInComment = null;
+      _fileImageInComment = null;
+      _mainScreenComponent.insert(
+          2,
+          CommentTile(
+            key: ValueKey(cmt.id),
+            comment: cmt,
+            numberOfReplies: 0,
+            onReplyClicked: onTapReply,
+          ));
+      setState(() {});
+      itemScrollController.scrollTo(
+          index: 2, duration: Duration(milliseconds: 200), alignment: 1);
     });
   }
 
@@ -171,14 +181,22 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
             children: [Text("Post")]),
       ),
       body: Stack(children: [
-        ListView.builder(
-          itemBuilder: (context, index) {
-            if (index < _mainScreenComponent.length) {
-              return _mainScreenComponent[index];
-            }
-          },
-        ),
-        // Bottom comment input field
+        // ListView.builder(
+        //   itemBuilder: (context, index) {
+        //     if (index < _mainScreenComponent.length) {
+        //       return _mainScreenComponent[index];
+        //     }
+        //   },
+        // ),
+        ScrollablePositionedList.builder(
+            itemScrollController: itemScrollController,
+            itemCount: _mainScreenComponent.length,
+            itemBuilder: (context, index) {
+              if (index < _mainScreenComponent.length) {
+                return _mainScreenComponent[index];
+              }
+            }),
+        //Bottom comment input field
         buildBottomCommentInput(context),
       ]),
     );

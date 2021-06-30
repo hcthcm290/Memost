@@ -124,6 +124,11 @@ class _CommentDetailScreenState extends State<CommentDetailScreen> {
     cmt.upload().then((_) {
       if (_fileImageInComment != null)
         cmt.setImage(_fileImageInComment.readAsBytesSync());
+      FocusScope.of(context).unfocus();
+      inputController.text = "";
+      _imageInComment = null;
+      _fileImageInComment = null;
+      setState(() {});
     });
   }
 
