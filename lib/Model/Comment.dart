@@ -53,25 +53,27 @@ class Comment {
       .then((value) => MemoryImage(value));
 
   Future<void> setImage(Uint8List i) async {
-    // FirebaseStorage.instance
-    //       .ref("comment")
-    //       .child(id)
-    //       .child("image.png")
-    //       .putData(i)
-    //       .then((value) {
-    //     value.ref.getDownloadURL().then((value) {
-    //       imgLink = value;
-    //       if (id != null)
-    //         db.FirebaseFirestore.instance
-    //             .collection("post")
-    //             .doc(post.id)
-    //             .collection("comment")
-    //             .doc(id)
-    //             .set(<String, dynamic>{"imgLink": value},
-    //                 db.SetOptions(merge: true));
-    //     });
-    //   });
-
+    /*
+     FirebaseStorage.instance
+           .ref("comment")
+           .child(id)
+           .child("image.png")
+           .putData(i)
+           .then((value) {
+         value.ref.getDownloadURL().then((value) {
+           imgLink = value;
+           if (id != null)
+             db.FirebaseFirestore.instance
+                 .collection("post")
+                 .doc(post.id)
+                 .collection("comment")
+                 .doc(id)
+                 .set(<String, dynamic>{"imgLink": value},
+                     db.SetOptions(merge: true));
+         });
+       });
+       // */
+    //*
     TaskSnapshot imageSnap = await FirebaseStorage.instance
         .ref("comment")
         .child(id)
@@ -89,7 +91,9 @@ class Comment {
           .set(<String, dynamic>{"imgLink": imgLink},
               db.SetOptions(merge: true));
       return;
-    }
+    } else
+      return;
+    // */
   }
 
   Future<void> upload() {

@@ -44,19 +44,26 @@ class Post {
       .getData()
       .then((value) => MemoryImage(value));
 
-  void setImage(Uint8List i) => FirebaseStorage.instance
-          .ref("post")
-          .child(id)
-          .child("image.png")
-          .putData(i)
-          .then((value) {
-        value.ref.getDownloadURL().then((value) {
-          image = value;
-          if (id != null)
-            db.FirebaseFirestore.instance.collection("post").doc(id).set(
-                <String, dynamic>{"image": value}, db.SetOptions(merge: true));
-        });
-      });
+  Future<void> setImage(Uint8List i) async {
+    var value = await FirebaseStorage.instance
+        .ref("post")
+        .child(id)
+        .child("image.png")
+        .putData(i);
+
+    var url = await value.ref.getDownloadURL();
+
+    image = url;
+    if (id != null) {
+      await db.FirebaseFirestore.instance
+          .collection("post")
+          .doc(id)
+          .set(<String, dynamic>{"image": url}, db.SetOptions(merge: true));
+      return;
+    } else
+      return;
+  }
+
   Future<void> upload() {
     if (id != null && id != "")
       return db.FirebaseFirestore.instance
