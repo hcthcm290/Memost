@@ -17,7 +17,9 @@ import 'package:flutter_application_1/Screens/DetailPostScreen/DetailPostScreen.
 import 'package:flutter_application_1/Services/UserCredentialService.dart';
 import 'package:flutter_application_1/constant.dart';
 import 'package:http/http.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:image_picker_saver/image_picker_saver.dart';
 
 class PostUI extends StatefulWidget {
   final Post post;
@@ -133,7 +135,44 @@ class _PostUIState extends State<PostUI> {
     }
   }
 
-  void _handleShareTap() {}
+  String localImgFilePath = "";
+  bool _processShare = false;
+
+  void _handleShareTap() async {
+    var result = showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        });
+
+    if (_processShare) return;
+
+    setState(() {
+      _processShare = true;
+    });
+    try {
+      if (localImgFilePath == "") {
+        var imageURL = widget.post.image;
+        var response = await get(Uri.parse(imageURL));
+
+        localImgFilePath =
+            await ImagePickerSaver.saveFile(fileData: response.bodyBytes);
+      }
+    } catch (e) {
+      print(e);
+    }
+
+    Navigator.of(context, rootNavigator: true).pop();
+
+    Share.shareFiles([localImgFilePath], subject: "${widget.post.title}");
+
+    setState(() {
+      _processShare = false;
+    });
+  }
 
   void _handleCommentTap() {
     if (widget.canNavigateToDetail) {
