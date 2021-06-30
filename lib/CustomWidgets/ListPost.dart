@@ -59,10 +59,35 @@ class _PostUIState extends State<PostUI> {
   db.CollectionReference reactionPath;
   db.Query reactionQuery;
   Reaction _reaction;
+
   @override
   void initState() {
     super.initState();
+    initReactionQuery();
 
+    var query = db.FirebaseFirestore.instance
+        .collection("post")
+        .doc(widget.post.id)
+        .collection("comment")
+        .where("isDeleted", isNotEqualTo: "true");
+
+    query.get().then((value) {
+      this.setState(() {
+        _commentCount = value.size.toString();
+      });
+    });
+    query.snapshots().listen((value) {
+      this.setState(() {
+        _commentCount = value.size.toString();
+      });
+    });
+
+    // widget.group.getAvatar().then((value) => this.setState(() {
+    //       _avatarImage = value;
+    //     }));
+  }
+
+  void initReactionQuery() {
     reactionPath = db.FirebaseFirestore.instance
         .collection("post")
         .doc(widget.post.id)
@@ -92,10 +117,6 @@ class _PostUIState extends State<PostUI> {
         _reaction = Reaction.fromJson(value.docs[0].data());
       });
     });
-
-    // widget.group.getAvatar().then((value) => this.setState(() {
-    //       _avatarImage = value;
-    //     }));
   }
 
   void _handleLovedTap() {
