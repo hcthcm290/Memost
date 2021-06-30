@@ -24,6 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
   UserModel userModel = null;
   BuildContext _context;
   db.QuerySnapshot snapshot;
+  List<Map<String, dynamic>> snapshotData;
 
   BannerAd _bannerAd;
   bool _isBannerAdReady = false;
@@ -62,16 +63,31 @@ class _HomeScreenState extends State<HomeScreen> {
     var query = db.FirebaseFirestore.instance
         .collection("post")
         .where("isDeleted", isNotEqualTo: "true");
+    // query = query.where("createdDate", isNotEqualTo: "");
+    // query = query.orderBy("createDate");
     query.get().then((value) {
-      this.setState(() {
-        snapshot = value;
+      snapshot = value;
+
+      snapshotData = snapshot.docs.map((e) => e.data()).toList();
+      print("before sort ${snapshotData.map((e) => e["createdDate"])}");
+
+      snapshotData.sort((x, y) {
+        var x_time = DateTime.parse(x["createdDate"]);
+        var y_time = DateTime.parse(y["createdDate"]);
+        var result = y_time.compareTo(x_time);
+        return result;
       });
+
+      // var abc = snapshot.docs.map((e) => e.data()["createdDate"]).toList();
+      print("after sort ${snapshotData.map((e) => e["createdDate"])}");
+
+      this.setState(() {});
     });
-    query.snapshots().listen((value) {
-      this.setState(() {
-        snapshot = value;
-      });
-    });
+    // query.snapshots().listen((value) {
+    //   this.setState(() {
+    //     snapshot = value;
+    //   });
+    // });
   }
 
   void dispose() {
@@ -102,22 +118,26 @@ class _HomeScreenState extends State<HomeScreen> {
           },
         ),
         body: Stack(children: [
-          ListView.builder(
-            itemBuilder: (context, index) {
-              if (index % 2 != 0) {
-                return Divider(
-                  height: defaultPadding * 0.75,
-                  thickness: defaultPadding * 0.75,
-                  color: Color.fromARGB(255, 15, 15, 15),
+          RefreshIndicator(
+            onRefresh: () {},
+            child: ListView.builder(
+              itemBuilder: (context, index) {
+                if (index % 2 != 0) {
+                  return Divider(
+                    height: defaultPadding * 0.75,
+                    thickness: defaultPadding * 0.75,
+                    color: Color.fromARGB(255, 15, 15, 15),
+                  );
+                }
+                //var postUI = Post.fromJson(snapshot?.docs[index ~/ 2]?.data());
+                var postUI = Post.fromJson(snapshotData[index ~/ 2]);
+                return PostUI(
+                  key: ValueKey(postUI.id),
+                  post: postUI,
                 );
-              }
-              var postUI = Post.fromJson(snapshot?.docs[index ~/ 2]?.data());
-              return PostUI(
-                key: ValueKey(postUI.id),
-                post: postUI,
-              );
-            },
-            itemCount: itemCount(),
+              },
+              itemCount: itemCount(),
+            ),
           ),
           if (_isBannerAdReady)
             Align(
