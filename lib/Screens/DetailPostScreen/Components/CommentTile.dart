@@ -160,6 +160,10 @@ class _CommentTileState extends State<CommentTile> {
                           this.widget.comment.imgLink != "")
                         CachedNetworkImage(
                           imageUrl: this.widget.comment.imgLink,
+                          placeholder: (context, url) => Container(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: defaultPadding * 5),
+                              child: CircularProgressIndicator()),
                           width: 200,
                         ),
                     ],

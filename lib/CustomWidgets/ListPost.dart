@@ -17,6 +17,7 @@ import 'package:flutter_application_1/Screens/DetailPostScreen/DetailPostScreen.
 import 'package:flutter_application_1/Services/UserCredentialService.dart';
 import 'package:flutter_application_1/constant.dart';
 import 'package:http/http.dart';
+import 'package:share_plus/share_plus.dart';
 
 class PostUI extends StatefulWidget {
   final Post post;
