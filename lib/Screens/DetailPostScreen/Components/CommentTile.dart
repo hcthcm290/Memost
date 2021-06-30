@@ -66,7 +66,7 @@ class _CommentTileState extends State<CommentTile> {
   int _commentLikedCount;
   String get commentLikedCount {
     if (_commentLikedCount == null) return "";
-    int count = _commentLikedCount + (_commentLiked ? 1 : 0);
+    int count = _commentLikedCount + (_commentLiked != null ? 1 : 0);
     if (count > 1000)
       return (count / 1000).toStringAsPrecision(1) + 'K';
     else if (count > 1000000)
