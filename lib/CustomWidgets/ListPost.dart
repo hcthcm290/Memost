@@ -27,9 +27,11 @@ class PostUI extends StatefulWidget {
     Key key,
     @required this.post,
     this.canNavigateToDetail = true,
+    this.onPostChanged,
   }) : super(key: key);
 
   final bool canNavigateToDetail;
+  final Stream<Post> onPostChanged;
 
   @override
   _PostUIState createState() => _PostUIState();
@@ -125,6 +127,9 @@ class _PostUIState extends State<PostUI> {
       });
     });
 
+    onPostChangeSubscribtion = widget.onPostChanged?.listen((event) {
+      setState(() {});
+    });
     /* DO NOT LISTEN
     query.snapshots().listen((value) {
       this.setState(() {
@@ -140,12 +145,14 @@ class _PostUIState extends State<PostUI> {
 
   StreamSubscription reactionQuerySubscribtion;
   StreamSubscription reactionUserSubscribtion;
+  StreamSubscription onPostChangeSubscribtion;
   @override
   void dispose() {
     // TODO: implement dispose
     super.dispose();
     reactionUserSubscribtion.cancel();
     reactionQuerySubscribtion?.cancel();
+    onPostChangeSubscribtion?.cancel();
   }
 
   void initReactionQuery() {
@@ -629,5 +636,78 @@ class _ListPostUIState extends State<ListPostUI> {
         ),
       ), // */
     );
+  }
+}
+
+class PostUILoader extends StatefulWidget {
+  final String id;
+  final void Function(Post) onCompleteLoad;
+  PostUILoader({
+    Key key,
+    @required this.id,
+    this.onCompleteLoad,
+  }) : super(key: key);
+
+  @override
+  _PostUILoaderState createState() => _PostUILoaderState();
+}
+
+class _PostUILoaderState extends State<PostUILoader> {
+  PostUI postUI;
+  StreamController<Post> postStream = new StreamController();
+  void Function(Post) onCompleteLoad;
+
+  StreamSubscription querySubscription;
+
+  @override
+  void initState() {
+    super.initState();
+
+    onCompleteLoad = widget.onCompleteLoad;
+
+    var query = db.FirebaseFirestore.instance
+        .collection("post")
+        .where("isDeleted", isNotEqualTo: "true")
+        .where("id", isEqualTo: widget.id);
+
+    query.get().then((value) {
+      if (value == null || value.size == 0) return;
+      Post result = Post.fromJson(value.docs[0].data());
+      if (postUI == null)
+        postUI = new PostUI(
+          post: result,
+          onPostChanged: postStream.stream,
+        );
+      onCompleteLoad?.call(result);
+      onCompleteLoad = null;
+      if (mounted) setState(() {});
+    });
+
+    querySubscription = query.snapshots().listen((event) {
+      if (event == null || event.size == 0) return;
+      Post result = Post.fromJson(event.docs[0].data());
+      if (postUI == null)
+        postUI = new PostUI(
+          post: result,
+          onPostChanged: postStream.stream,
+        );
+      onCompleteLoad?.call(result);
+      onCompleteLoad = null;
+      postStream.add(result);
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    querySubscription.cancel();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (postUI != null)
+      return postUI;
+    else
+      return CircularProgressIndicator();
   }
 }

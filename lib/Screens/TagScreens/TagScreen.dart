@@ -1,8 +1,13 @@
+import 'dart:math';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/Screens/HomeScreen/Components/HomeScreenAppBar.dart';
 import 'package:flutter_application_1/Screens/TagScreens/Component/TagUI.dart';
 import 'package:flutter_application_1/constant.dart';
+
+import 'package:cloud_firestore/cloud_firestore.dart' as db;
+import 'package:tuple/tuple.dart';
 
 class TagScreen extends StatefulWidget {
   const TagScreen({Key key}) : super(key: key);
@@ -16,12 +21,75 @@ class _TagScreenState extends State<TagScreen> {
 
   List<Widget> _tagsWeek = [];
   List<Widget> _tagMonth = [];
+  final int cutoff = 10;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
 
+    var query = db.FirebaseFirestore.instance.collection("tag");
+    query.get().then((value) {
+      if (value == null || value.size == 0) return;
+      List<String> tags = value.docs.map((e) => e.id).toList();
+      Map<String, int> newPostInTagWeek = {};
+      Map<String, int> newPostInTagMonth = {};
+      for (var item in tags) {
+        var deepQuery = query.doc(item).collection("content");
+        var currentTag = item;
+        deepQuery.get().then((value) {
+          if (value == null || value.size == 0) return;
+          newPostInTagWeek[currentTag] = value.docs
+              .where((element) =>
+                  DateTimeRange(
+                    end: DateTime.now(),
+                    start: (element.data()["createdDate"] as DateTime),
+                  ).duration.inDays <=
+                  7)
+              .length;
+          newPostInTagMonth[currentTag] = value.docs
+              .where((element) =>
+                  DateTimeRange(
+                    end: DateTime.now(),
+                    start: (element.data()["createdDate"] as DateTime),
+                  ).duration.inDays <=
+                  30)
+              .length;
+          if (newPostInTagWeek.length >= tags.length) {
+            // Calculate the most popular in week & month
+            List<int> topWeek = newPostInTagWeek.values.toList();
+            topWeek.sort();
+            int cutoffWeek = topWeek[max(topWeek.length - 9, 0)];
+            newPostInTagWeek.removeWhere((key, value) => value < cutoffWeek);
+
+            newPostInTagMonth
+                .removeWhere((key, value) => newPostInTagWeek.containsKey(key));
+
+            if (newPostInTagMonth.length > 0) {
+              List<int> topMonth = newPostInTagMonth.values.toList();
+              topMonth.sort();
+              int cutoffMonth = topMonth[max(topMonth.length - 9, 0)];
+              newPostInTagMonth
+                  .removeWhere((key, value) => value < cutoffMonth);
+            }
+
+            // Add to TagWeek & TagMonth
+            for (var item in newPostInTagWeek.keys) {
+              _tagsWeek.add(Tag(
+                tagName: item,
+              ));
+            }
+            for (var item in newPostInTagMonth.keys) {
+              _tagMonth.add(Tag(
+                tagName: item,
+              ));
+            }
+          }
+        });
+      }
+    });
+
+    /*
     for (int i = 0; i < 10; i++) {
       _tagsWeek.add(Tag(
         tagName: "Meme$i",
@@ -33,6 +101,7 @@ class _TagScreenState extends State<TagScreen> {
         tagName: "Study$i",
       ));
     }
+    // */
   }
 
   @override
