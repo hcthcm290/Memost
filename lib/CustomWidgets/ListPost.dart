@@ -708,6 +708,6 @@ class _PostUILoaderState extends State<PostUILoader> {
     if (postUI != null)
       return postUI;
     else
-      return CircularProgressIndicator();
+      return Container();
   }
 }
