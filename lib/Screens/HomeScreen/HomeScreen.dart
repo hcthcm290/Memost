@@ -34,25 +34,25 @@ class _HomeScreenState extends State<HomeScreen> {
     // TODO: implement initState
     super.initState();
 
-    _bannerAd = BannerAd(
-      adUnitId: AdHelper.bannerAdUnitId,
-      request: AdRequest(),
-      size: AdSize.banner,
-      listener: BannerAdListener(
-        onAdLoaded: (_) {
-          setState(() {
-            _isBannerAdReady = true;
-          });
-        },
-        onAdFailedToLoad: (ad, err) {
-          print('Failed to load a banner ad: ${err.message}');
-          _isBannerAdReady = false;
-          ad.dispose();
-        },
-      ),
-    );
+    // _bannerAd = BannerAd(
+    //   adUnitId: AdHelper.bannerAdUnitId,
+    //   request: AdRequest(),
+    //   size: AdSize.banner,
+    //   listener: BannerAdListener(
+    //     onAdLoaded: (_) {
+    //       setState(() {
+    //         _isBannerAdReady = true;
+    //       });
+    //     },
+    //     onAdFailedToLoad: (ad, err) {
+    //       print('Failed to load a banner ad: ${err.message}');
+    //       _isBannerAdReady = false;
+    //       ad.dispose();
+    //     },
+    //   ),
+    // );
 
-    _bannerAd.load();
+    // _bannerAd.load();
 
     UserCredentialService.instance.onAuthChange.listen((user) async {
       userModel = await UserCredentialService.convertToUserModel(user);
@@ -69,18 +69,18 @@ class _HomeScreenState extends State<HomeScreen> {
     query.get().then((value) {
       snapshot = value;
 
-      snapshotData = snapshot.docs.map((e) => e.data()).toList();
-      print("before sort ${snapshotData.map((e) => e["createdDate"])}");
+      // snapshotData = snapshot.docs.map((e) => e.data()).toList();
+      // print("before sort ${snapshotData.map((e) => e["createdDate"])}");
 
-      snapshotData.sort((x, y) {
-        var x_time = DateTime.parse(x["createdDate"]);
-        var y_time = DateTime.parse(y["createdDate"]);
-        var result = y_time.compareTo(x_time);
-        return result;
-      });
+      // snapshotData.sort((x, y) {
+      //   var x_time = DateTime.parse(x["createdDate"]);
+      //   var y_time = DateTime.parse(y["createdDate"]);
+      //   var result = y_time.compareTo(x_time);
+      //   return result;
+      // });
 
-      // var abc = snapshot.docs.map((e) => e.data()["createdDate"]).toList();
-      print("after sort ${snapshotData.map((e) => e["createdDate"])}");
+      //// var abc = snapshot.docs.map((e) => e.data()["createdDate"]).toList();
+      // print("after sort ${snapshotData.map((e) => e["createdDate"])}");
 
       this.setState(() {});
     });
@@ -89,6 +89,20 @@ class _HomeScreenState extends State<HomeScreen> {
     //     snapshot = value;
     //   });
     // });
+  }
+
+  Future<void> refreshList() async {
+    var query = db.FirebaseFirestore.instance
+        .collection("post")
+        .where("isDeleted", isEqualTo: "false")
+        .where("createdDate", isNotEqualTo: "")
+        .orderBy("createdDate", descending: true)
+        .limit(20);
+    var value = await query.get();
+    snapshot = value;
+
+    this.setState(() {});
+    return;
   }
 
   void dispose() {
@@ -120,7 +134,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         body: Stack(children: [
           RefreshIndicator(
-            onRefresh: () {},
+            onRefresh: refreshList,
             child: ListView.builder(
               itemBuilder: (context, index) {
                 if (index % 2 != 0) {
@@ -140,17 +154,17 @@ class _HomeScreenState extends State<HomeScreen> {
               itemCount: itemCount(),
             ),
           ),
-          if (_isBannerAdReady)
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                height:
-                    (MediaQuery.of(context).size.width / _bannerAd.size.width) *
-                        _bannerAd.size.height.toDouble(),
-                child: AdWidget(ad: _bannerAd),
-              ),
-            )
+          // if (_isBannerAdReady)
+          //   Align(
+          //     alignment: Alignment.bottomCenter,
+          //     child: Container(
+          //       width: MediaQuery.of(context).size.width,
+          //       height:
+          //           (MediaQuery.of(context).size.width / _bannerAd.size.width) *
+          //               _bannerAd.size.height.toDouble(),
+          //       child: AdWidget(ad: _bannerAd),
+          //     ),
+          //   )
         ]),
         drawer: UserInfoDrawer(
           userModel: this.userModel,
