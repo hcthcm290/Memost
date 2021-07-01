@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/CustomWidgets/ListPost.dart';
 import 'package:flutter_application_1/Model/Post.dart';
@@ -20,11 +21,14 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   GlobalKey<ScaffoldState> _key = GlobalKey();
+  List<PostUI> _listPostUI = [];
 
   UserModel userModel = null;
   BuildContext _context;
   db.QuerySnapshot snapshot;
-  List<Map<String, dynamic>> snapshotData;
+  db.QueryDocumentSnapshot lastSnapshot;
+  bool _loading = false;
+  bool _hasMore = true;
 
   BannerAd _bannerAd;
   bool _isBannerAdReady = false;
@@ -60,48 +64,71 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {});
     });
 
-    var query = db.FirebaseFirestore.instance
-        .collection("post")
-        .where("isDeleted", isEqualTo: "false")
-        .where("createdDate", isNotEqualTo: "")
-        .orderBy("createdDate", descending: true)
-        .limit(20);
-    query.get().then((value) {
-      snapshot = value;
-
-      // snapshotData = snapshot.docs.map((e) => e.data()).toList();
-      // print("before sort ${snapshotData.map((e) => e["createdDate"])}");
-
-      // snapshotData.sort((x, y) {
-      //   var x_time = DateTime.parse(x["createdDate"]);
-      //   var y_time = DateTime.parse(y["createdDate"]);
-      //   var result = y_time.compareTo(x_time);
-      //   return result;
-      // });
-
-      //// var abc = snapshot.docs.map((e) => e.data()["createdDate"]).toList();
-      // print("after sort ${snapshotData.map((e) => e["createdDate"])}");
-
-      this.setState(() {});
-    });
-    // query.snapshots().listen((value) {
-    //   this.setState(() {
-    //     snapshot = value;
-    //   });
-    // });
+    refreshList();
   }
 
-  Future<void> refreshList() async {
+  Future<void> getMorePost() async {
+    if (_loading) return;
+
+    _loading = true;
+
     var query = db.FirebaseFirestore.instance
         .collection("post")
         .where("isDeleted", isEqualTo: "false")
         .where("createdDate", isNotEqualTo: "")
         .orderBy("createdDate", descending: true)
-        .limit(20);
+        .startAfterDocument(lastSnapshot)
+        .limit(3);
+
     var value = await query.get();
     snapshot = value;
 
+    if (snapshot.docs.length > 0)
+      lastSnapshot = snapshot.docs[snapshot.docs.length - 1];
+
+    for (var docSnap in snapshot.docs) {
+      Post post = Post.fromJson(docSnap.data());
+
+      _listPostUI.add(PostUI(post: post));
+    }
+
+    if (snapshot.docs.length < 3) _hasMore = false;
+
     this.setState(() {});
+    _loading = false;
+    return;
+  }
+
+  Future<void> refreshList() async {
+    if (_loading) return;
+
+    _loading = true;
+
+    _listPostUI.clear();
+    _hasMore = true;
+
+    var query = db.FirebaseFirestore.instance
+        .collection("post")
+        .where("isDeleted", isEqualTo: "false")
+        .where("createdDate", isNotEqualTo: "")
+        .orderBy("createdDate", descending: true)
+        .limit(3);
+    var value = await query.get();
+    snapshot = value;
+
+    if (snapshot.docs.length > 0)
+      lastSnapshot = snapshot.docs[snapshot.docs.length - 1];
+
+    for (var docSnap in snapshot.docs) {
+      Post post = Post.fromJson(docSnap.data());
+
+      _listPostUI.add(PostUI(post: post));
+    }
+
+    if (snapshot.docs.length < 3) _hasMore = false;
+
+    this.setState(() {});
+    _loading = false;
     return;
   }
 
@@ -113,10 +140,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   int itemCount() {
-    if (snapshot == null || snapshot.size == 0)
+    if (_listPostUI == null || _listPostUI.length == 0)
       return 0;
     else
-      return snapshot.size * 2 - 1;
+      return _listPostUI.length * 2 - 1;
   }
 
   @override
@@ -133,25 +160,47 @@ class _HomeScreenState extends State<HomeScreen> {
           },
         ),
         body: Stack(children: [
-          RefreshIndicator(
-            onRefresh: refreshList,
-            child: ListView.builder(
-              itemBuilder: (context, index) {
-                if (index % 2 != 0) {
-                  return Divider(
-                    height: defaultPadding * 0.75,
-                    thickness: defaultPadding * 0.75,
-                    color: Color.fromARGB(255, 15, 15, 15),
-                  );
-                }
-                var postUI = Post.fromJson(snapshot?.docs[index ~/ 2]?.data());
-                //var postUI = Post.fromJson(snapshotData[index ~/ 2]);
-                return PostUI(
-                  key: ValueKey(postUI.id),
-                  post: postUI,
-                );
-              },
-              itemCount: itemCount(),
+          NotificationListener<ScrollNotification>(
+            onNotification: (scrollNotification) {
+              final maxScroll = scrollNotification.metrics.maxScrollExtent;
+              final currentScroll = scrollNotification.metrics.pixels;
+
+              if (maxScroll == currentScroll) {
+                getMorePost();
+                return;
+              }
+              return;
+            },
+            child: RefreshIndicator(
+              onRefresh: refreshList,
+              child: ListView.builder(
+                itemBuilder: (context, index) {
+                  if (index % 2 != 0) {
+                    return Divider(
+                      height: defaultPadding * 0.75,
+                      thickness: defaultPadding * 0.75,
+                      color: Color.fromARGB(255, 15, 15, 15),
+                    );
+                  }
+                  if (index > itemCount()) {
+                    if (_hasMore) {
+                      return CupertinoActivityIndicator(
+                        radius: defaultPadding,
+                      );
+                    } else {
+                      return Container();
+                    }
+                  }
+                  // var postUI =
+                  //     Post.fromJson(snapshot?.docs[index ~/ 2]?.data());
+                  // return PostUI(
+                  //   key: ValueKey(postUI.id),
+                  //   post: postUI,
+                  // );
+                  return _listPostUI[index ~/ 2];
+                },
+                itemCount: itemCount() + 2,
+              ),
             ),
           ),
           // if (_isBannerAdReady)

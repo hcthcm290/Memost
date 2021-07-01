@@ -24,10 +24,7 @@ class _UserInfoScreenState extends State<UserInfoScreen>
   String _totalPostCount;
   String _totalLikeCount;
 
-  final List<Tuple2> _pages = [
-    Tuple2("Post", UserListPost()),
-    Tuple2("Comment", UserListComment()),
-  ];
+  List<Tuple2> _pages = [];
 
   Future<void> getTotalPostCount() async {
     setState(() {
@@ -53,6 +50,18 @@ class _UserInfoScreenState extends State<UserInfoScreen>
   @override
   void initState() {
     super.initState();
+    _pages = [
+      Tuple2(
+          "Post",
+          UserListPost(
+            userModel: widget.model,
+          )),
+      Tuple2(
+          "Comment",
+          UserListComment(
+            model: widget.model,
+          )),
+    ];
     _tabController = TabController(length: _pages.length, vsync: this);
     getTotalPostCount();
     getTotalLikeCount();
