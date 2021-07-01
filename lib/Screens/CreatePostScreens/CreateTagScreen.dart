@@ -6,6 +6,7 @@ import 'package:flutter_application_1/Model/Post.dart';
 import 'package:flutter_application_1/Model/UserModel.dart';
 import 'package:flutter_application_1/Services/UserCredentialService.dart';
 import 'package:flutter_application_1/constant.dart';
+import 'package:cloud_firestore/cloud_firestore.dart' as db;
 
 class CreateTagPostScreen extends StatefulWidget {
   CreateTagPostScreen({Key key, @required this.image, @required this.title})
@@ -69,8 +70,28 @@ class _CreateTagPostScreenState extends State<CreateTagPostScreen> {
     post.isDeleted = "false";
     post.owner = userModel.username;
     post.title = widget.title;
-    post.upload().then((_) =>
-        widget.image.readAsBytes().then((value) => post.setImage(value)));
+    post.upload().then((_) {
+      widget.image.readAsBytes().then((value) => post.setImage(value));
+      if (post.id == null) {
+        throw NullThrownError();
+      }
+      var path = db.FirebaseFirestore.instance.collection("tag");
+      if (tag1Ctrl.text != null && tag1Ctrl.text != "")
+        path
+            .doc(tag1Ctrl.text)
+            .collection("content")
+            .add(<String, dynamic>{"id": post.id});
+      if (tag2Ctrl.text != null && tag2Ctrl.text != "")
+        path
+            .doc(tag2Ctrl.text)
+            .collection("content")
+            .add(<String, dynamic>{"id": post.id});
+      if (tag3Ctrl.text != null && tag3Ctrl.text != "")
+        path
+            .doc(tag3Ctrl.text)
+            .collection("content")
+            .add(<String, dynamic>{"id": post.id});
+    });
 
     setState(() {
       _processing = false;
