@@ -77,20 +77,20 @@ class _CreateTagPostScreenState extends State<CreateTagPostScreen> {
       }
       var path = db.FirebaseFirestore.instance.collection("tag");
       if (tag1Ctrl.text != null && tag1Ctrl.text != "")
-        path
-            .doc(tag1Ctrl.text)
-            .collection("content")
-            .add(<String, dynamic>{"id": post.id});
+        path.doc(tag1Ctrl.text).collection("content").add(<String, dynamic>{
+          "id": post.id,
+          "createdDate": DateTime.now(),
+        });
       if (tag2Ctrl.text != null && tag2Ctrl.text != "")
-        path
-            .doc(tag2Ctrl.text)
-            .collection("content")
-            .add(<String, dynamic>{"id": post.id});
+        path.doc(tag2Ctrl.text).collection("content").add(<String, dynamic>{
+          "id": post.id,
+          "createdDate": DateTime.now(),
+        });
       if (tag3Ctrl.text != null && tag3Ctrl.text != "")
-        path
-            .doc(tag3Ctrl.text)
-            .collection("content")
-            .add(<String, dynamic>{"id": post.id});
+        path.doc(tag3Ctrl.text).collection("content").add(<String, dynamic>{
+          "id": post.id,
+          "createdDate": DateTime.now(),
+        });
     });
 
     setState(() {
