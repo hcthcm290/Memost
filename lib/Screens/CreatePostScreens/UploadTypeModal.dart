@@ -5,6 +5,7 @@ import 'package:flutter_application_1/Screens/CreatePostScreens/CreatePostDescri
 import 'package:flutter_application_1/Screens/Login/Components/LoginOptionCard.dart';
 import 'package:flutter_application_1/constant.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class UploadTypeModal extends StatefulWidget {
   UploadTypeModal({Key key}) : super(key: key);
@@ -27,17 +28,21 @@ class _UploadTypeModalState extends State<UploadTypeModal> {
   }
 
   void _fromLibrary() async {
-    final image = await _imagePicker.getImage(source: ImageSource.gallery);
+    var status = await Permission.storage.request();
 
-    print(image);
-    if (image != null) {
-      // Todo: Navigate to upload screen
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => CreatePostDescriptionScreen(
-                    image: File(image.path),
-                  )));
+    if (status.isGranted) {
+      final image = await _imagePicker.getImage(source: ImageSource.gallery);
+
+      print(image);
+      if (image != null) {
+        // Todo: Navigate to upload screen
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => CreatePostDescriptionScreen(
+                      image: File(image.path),
+                    )));
+      }
     }
   }
 
