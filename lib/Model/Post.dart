@@ -64,23 +64,25 @@ class Post {
       return;
   }
 
-  Future<void> upload() {
-    if (id != null && id != "")
-      return db.FirebaseFirestore.instance
+  Future<void> upload() async {
+    if (id != null && id != "") {
+      await db.FirebaseFirestore.instance
           .collection("post")
           .doc(id)
           .set(toJson());
-    else {
-      return db.FirebaseFirestore.instance
+      return;
+    } else {
+      var docRef =
+          await db.FirebaseFirestore.instance.collection("post").add(toJson());
+
+      id = docRef.id;
+      await db.FirebaseFirestore.instance
           .collection("post")
-          .add(toJson())
-          .then((docRef) {
-        id = docRef.id;
-        return db.FirebaseFirestore.instance
-            .collection("post")
-            .doc(id)
-            .set(<String, dynamic>{"id": id}, db.SetOptions(merge: true));
-      });
+          .doc(id)
+          .set(<String, dynamic>{"id": id}, db.SetOptions(merge: true));
+
+      return;
+      ;
     }
   }
 }
