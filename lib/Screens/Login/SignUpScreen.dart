@@ -2,7 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_application_1/Screens/Login/Components/AgreementAndPolicy.dart';
 import 'package:flutter_application_1/Screens/Login/Components/LoginOptionCard.dart';
-import 'package:flutter_application_1/Screens/Login/SignUpScreen.dart';
 import 'package:flutter_application_1/Services/UserCredentialService.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
@@ -10,19 +9,20 @@ import 'package:flutter_application_1/constant.dart';
 
 import 'Components/CustomDivider.dart';
 
-class LoginScreen extends StatefulWidget {
-  LoginScreen({Key key}) : super(key: key);
+class SignUpScreen extends StatefulWidget {
+  SignUpScreen({Key key}) : super(key: key);
 
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  _SignUpScreenState createState() => _SignUpScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _SignUpScreenState extends State<SignUpScreen> {
   UserCredentialService _userCredentialService = UserCredentialService.instance;
   String _email = "";
   String _password = "";
   String _emailError = null;
   String _passwordError = null;
+  String _username;
   bool _processing = false;
 
   void _loginWithGoogle() async {
@@ -34,6 +34,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (uid != null) {
         print("signed with google uid: $uid");
 
+        Navigator.pop(context);
         Navigator.pop(context);
       }
       setState(() {
@@ -56,6 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
       print("signed with google uid: $uid");
 
       Navigator.pop(context);
+      Navigator.pop(context);
     }
     setState(() {
       _processing = false;
@@ -67,8 +69,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _signUp() async {
-    Navigator.push(
-        context, MaterialPageRoute(builder: (context) => SignUpScreen()));
     print("sign up");
   }
 
@@ -81,27 +81,47 @@ class _LoginScreenState extends State<LoginScreen> {
     _processing = true;
     setState(() {});
 
-    String result =
-        await _userCredentialService.loginWithEmailPassword(_email, _password);
-
-    if (result == "user-not-found") {
-      _emailError = "Email not exist";
-    } else if (result == "wrong-password") {
-      _passwordError = "Wrong password";
-    } else if (result == "unknown") {
-      print("Unknown error");
-    } else {
-      _processing = false;
-      print("login success with uid $result");
-
-      Navigator.pop(context);
+    if (_email == "") {
+      setState(() {
+        _emailError = "email cannot be blank";
+      });
     }
+
+    String error = "";
+
+    error = await UserCredentialService.instance.verifyNewEmail(_email);
+    if (error != null) {
+      setState(() {
+        _emailError = error;
+      });
+    }
+
+    if (_password == "") {
+      setState(() {
+        _password = "password cannot be blank";
+      });
+    }
+
+    error = UserCredentialService.instance.verifyPassword(_password);
+    if (error != null) {
+      setState(() {
+        _password = error;
+      });
+    }
+
+    UserCredential result = await _userCredentialService
+        .registerNewUserWithEmail(_email, _password);
+
+    Navigator.pop(context);
+    Navigator.pop(context);
+
     _processing = false;
     setState(() {});
   }
 
   FocusNode _userNameFN = FocusNode();
   FocusNode _passwordFN = FocusNode();
+  FocusNode _emailFN = FocusNode();
 
   bool hidePassword = true;
 
@@ -142,6 +162,10 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() {});
     });
 
+    _emailFN.addListener(() {
+      setState(() {});
+    });
+
     void onTapSignUp() {}
 
     return Scaffold(
@@ -161,7 +185,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Log in",
+                      "Sign up",
                       style: Theme.of(context)
                           .textTheme
                           .headline5
@@ -185,7 +209,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           .textTheme
                           .headline6
                           .copyWith(fontWeight: FontWeight.w300),
-                      focusNode: _userNameFN,
+                      focusNode: _emailFN,
                       decoration: InputDecoration(
                         errorText: _emailError,
                         errorStyle: Theme.of(context)
@@ -198,7 +222,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             .textTheme
                             .headline6
                             .copyWith(
-                                color: _userNameFN.hasFocus
+                                color: _emailFN.hasFocus
                                     ? Colors.blue
                                     : Colors.white60,
                                 fontWeight: FontWeight.w800,
@@ -257,32 +281,37 @@ class _LoginScreenState extends State<LoginScreen> {
                                 height: 0.5),
                       ),
                     ),
-                    SizedBox(height: defaultPadding * 1.75),
-                    // Signup text
-                    RichText(
-                        text: TextSpan(children: [
-                      TextSpan(
-                          text: "New to Memmost? ",
-                          style: Theme.of(context)
-                              .textTheme
-                              .subtitle2
-                              .copyWith(color: Colors.white54)),
-                      TextSpan(
-                          text: "Sign up",
-                          recognizer: TapGestureRecognizer()..onTap = _signUp,
-                          style: Theme.of(context).textTheme.subtitle1.copyWith(
-                              color: Colors.blue, fontWeight: FontWeight.w800)),
-                    ])),
-                    SizedBox(height: defaultPadding * 1.75),
-                    RichText(
-                      text: TextSpan(
-                        text: "Forgot password",
-                        recognizer: TapGestureRecognizer()
-                          ..onTap = _forgotPassword,
-                        style: Theme.of(context).textTheme.subtitle1.copyWith(
-                            color: Colors.blue, fontWeight: FontWeight.w800),
+                    SizedBox(height: defaultPadding),
+                    TextField(
+                      onChanged: (value) {
+                        _username = value;
+                      },
+                      style: Theme.of(context)
+                          .textTheme
+                          .headline6
+                          .copyWith(fontWeight: FontWeight.w300),
+                      focusNode: _userNameFN,
+                      decoration: InputDecoration(
+                        errorText: _emailError,
+                        errorStyle: Theme.of(context)
+                            .textTheme
+                            .subtitle2
+                            .copyWith(color: Colors.redAccent),
+                        contentPadding: EdgeInsets.only(bottom: 10),
+                        labelText: "Display name (optional)",
+                        labelStyle: Theme.of(context)
+                            .textTheme
+                            .headline6
+                            .copyWith(
+                                color: _userNameFN.hasFocus
+                                    ? Colors.blue
+                                    : Colors.white60,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 20,
+                                height: 0.5),
                       ),
                     ),
+                    SizedBox(height: defaultPadding * 1.75),
                     SizedBox(height: 100),
                   ],
                 ),
