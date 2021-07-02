@@ -82,6 +82,7 @@ class _PostUIState extends State<PostUI> {
   }
 
   ImageProvider _avatarImage;
+  String ownerName = "";
 
   _PostUIState() {}
   db.CollectionReference reactionPath;
@@ -98,6 +99,7 @@ class _PostUIState extends State<PostUI> {
       initReactionQuery();
     });
 
+    _getOwnerName();
     _getAvatarImage();
 
     var query = db.FirebaseFirestore.instance
@@ -171,6 +173,20 @@ class _PostUIState extends State<PostUI> {
         userSnap.docs[0].data()["avatarUrl"] != "") {
       _avatarImage =
           CachedNetworkImageProvider(userSnap.docs[0].data()["avatarUrl"]);
+      if (mounted) {
+        setState(() {});
+      }
+    }
+  }
+
+  Future<void> _getOwnerName() async {
+    var userQuery = db.FirebaseFirestore.instance
+        .collection("users")
+        .where("username", isEqualTo: "${widget.post.owner}");
+    var userSnap = await userQuery.get();
+    if (userSnap.docs[0].data()["displayName"] != null ||
+        userSnap.docs[0].data()["displayName"] != "") {
+      ownerName = userSnap.docs[0].data()["displayName"].toString();
       if (mounted) {
         setState(() {});
       }
@@ -383,7 +399,7 @@ class _PostUIState extends State<PostUI> {
                           children: [
                             GestureDetector(
                                 onTap: this._handleUsernameTap,
-                                child: Text("${widget.post?.owner}",
+                                child: Text("$ownerName",
                                     style: Theme.of(context)
                                         .textTheme
                                         .bodyText2

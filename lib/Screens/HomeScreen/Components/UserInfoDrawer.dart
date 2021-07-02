@@ -21,6 +21,8 @@ class UserInfoDrawer extends StatefulWidget {
 }
 
 class _UserInfoDrawerState extends State<UserInfoDrawer> {
+  String userName = "Anonymous";
+
   void onTapMyProfile() async {
     await Future.delayed(Duration(milliseconds: 300));
     Navigator.push(
@@ -34,6 +36,7 @@ class _UserInfoDrawerState extends State<UserInfoDrawer> {
   @override
   void initState() {
     super.initState();
+    getUserName();
   }
 
   void onTapCreateGroup(context) {
@@ -87,15 +90,15 @@ class _UserInfoDrawerState extends State<UserInfoDrawer> {
         this.widget.userModel.username == "") {
       return "Anonymous";
     } else {
-      return this.widget.userModel.username;
+      return this.widget.userModel.displayName;
     }
   }
 
   ImageProvider getAvatar() {
     if (this.widget.userModel == null) {
       return AssetImage("assets/logo/default-group-avatar.png");
-    } else if (this.widget.userModel.username == null ||
-        this.widget.userModel.username == "") {
+    } else if (this.widget.userModel.avatarUrl == null ||
+        this.widget.userModel.avatarUrl == "") {
       return AssetImage("assets/logo/default-group-avatar.png");
     } else {
       return CachedNetworkImageProvider(this.widget.userModel.avatarUrl);

@@ -147,11 +147,10 @@ class UserCredentialService {
 
         if (!qSnapshot.exists) {
           final newUser = UserModel(
-              username: "basa google",
+              username: usrCredential.user.uid,
               email: usrCredential.user.email,
               password: null,
-              avatarUrl:
-                  "https://yt3.ggpht.com/ytc/AAUvwng30OdQa0xi_lXW1JiW4rY81E5l61WhjpKptAbNUw=s88-c-k-c0x00ffffff-no-rj");
+              avatarUrl: null);
 
           await _usersRef.doc(usrCredential.user.uid).set(newUser.toMap());
 
@@ -220,11 +219,11 @@ class UserCredentialService {
 
         if (!qSnapshot.exists) {
           final newUser = UserModel(
-              username: "basa fb",
+              username: usrCredential.user.uid,
               email: profile["email"],
               password: null,
-              avatarUrl:
-                  "https://s3-symbol-logo.tradingview.com/facebook--big.svg");
+              avatarUrl: null);
+          newUser.id = usrCredential.user.uid;
           await _usersRef.doc(usrCredential.user.uid).set(newUser.toMap());
 
           _onAuthChange.add(usrCredential.user);
