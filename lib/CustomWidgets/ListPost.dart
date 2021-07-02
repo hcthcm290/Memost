@@ -98,6 +98,8 @@ class _PostUIState extends State<PostUI> {
       initReactionQuery();
     });
 
+    _getAvatarImage();
+
     var query = db.FirebaseFirestore.instance
         .collection("post")
         .doc(widget.post.id)
@@ -105,9 +107,11 @@ class _PostUIState extends State<PostUI> {
         .where("isDeleted", isNotEqualTo: "true");
 
     query.get().then((value) {
-      this.setState(() {
-        commentCount = value.size;
-      });
+      if (mounted) {
+        this.setState(() {
+          commentCount = value.size;
+        });
+      }
     });
 
     var query2 = db.FirebaseFirestore.instance
@@ -115,16 +119,19 @@ class _PostUIState extends State<PostUI> {
         .doc(widget.post.id)
         .collection("reaction");
     query2.get().then((value) {
-      this.setState(() {
-        var data = value.docs.map((e) => Reaction.fromJson(e.data())).toList();
-        int loved = data
-            .where((element) => element.reaction == ReactionType.loved)
-            .length;
-        int hated = data
-            .where((element) => element.reaction == ReactionType.hated)
-            .length;
-        likeCount = loved - hated;
-      });
+      if (mounted) {
+        this.setState(() {
+          var data =
+              value.docs.map((e) => Reaction.fromJson(e.data())).toList();
+          int loved = data
+              .where((element) => element.reaction == ReactionType.loved)
+              .length;
+          int hated = data
+              .where((element) => element.reaction == ReactionType.hated)
+              .length;
+          likeCount = loved - hated;
+        });
+      }
     });
 
     onPostChangeSubscribtion = widget.onPostChanged?.listen((event) {
@@ -155,6 +162,21 @@ class _PostUIState extends State<PostUI> {
     onPostChangeSubscribtion?.cancel();
   }
 
+  Future<void> _getAvatarImage() async {
+    var userQuery = db.FirebaseFirestore.instance
+        .collection("users")
+        .where("username", isEqualTo: "${widget.post.owner}");
+    var userSnap = await userQuery.get();
+    if (userSnap.docs[0].data()["avatarUrl"] != null ||
+        userSnap.docs[0].data()["avatarUrl"] != "") {
+      _avatarImage =
+          CachedNetworkImageProvider(userSnap.docs[0].data()["avatarUrl"]);
+      if (mounted) {
+        setState(() {});
+      }
+    }
+  }
+
   void initReactionQuery() {
     _reaction = null;
     reactionPath = db.FirebaseFirestore.instance
@@ -180,9 +202,11 @@ class _PostUIState extends State<PostUI> {
           }
           return;
         } else {
-          setState(() {
-            _reaction = Reaction.fromJson(value.docs[0].data());
-          });
+          if (mounted) {
+            setState(() {
+              _reaction = Reaction.fromJson(value.docs[0].data());
+            });
+          }
         }
       });
     } catch (e) {
@@ -196,9 +220,11 @@ class _PostUIState extends State<PostUI> {
         _reaction = Reaction.fromJson(value.docs[0].data());
         return;
       }
-      setState(() {
-        _reaction = Reaction.fromJson(value.docs[0].data());
-      });
+      if (mounted) {
+        setState(() {
+          _reaction = Reaction.fromJson(value.docs[0].data());
+        });
+      }
     });
   }
 
