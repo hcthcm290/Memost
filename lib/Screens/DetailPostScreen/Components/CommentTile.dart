@@ -6,7 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/Model/Comment.dart';
 import 'package:flutter_application_1/Model/Reaction.dart';
 import 'package:flutter_application_1/Model/Reaction_Type.dart';
+import 'package:flutter_application_1/Model/UserModel.dart';
 import 'package:flutter_application_1/Screens/DetailPostScreen/CommentDetailScreen.dart';
+import 'package:flutter_application_1/Screens/UserInfoScreen/UserInfoScreen.dart';
 import 'package:flutter_application_1/Services/UserCredentialService.dart';
 import 'package:flutter_application_1/constant.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' as db;
@@ -60,7 +62,7 @@ class _CommentTileState extends State<CommentTile> {
 
   String _getOwnerName(String userID) {
     // Todo: Fetch data
-    return "basa102";
+    return _comment.owner;
   }
 
   int _commentLikedCount;
@@ -199,6 +201,22 @@ class _CommentTileState extends State<CommentTile> {
     }
   }
 
+  Future<void> _handleAvatarTap() async {
+    var ownerSnap = await db.FirebaseFirestore.instance
+        .collection("users")
+        .where("username", isEqualTo: _comment.owner)
+        .get();
+
+    UserModel ownerModel = UserModel();
+    ownerModel.fromMap(ownerSnap.docs[0].data());
+
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) =>
+                UserInfoScreen(model: ownerModel, realtime: false)));
+  }
+
   @override
   void initState() {
     // TODO: implement initState
@@ -232,16 +250,19 @@ class _CommentTileState extends State<CommentTile> {
                   width: 40 * (1 - this.widget.avatarSizePercentage),
                   height: 40 * (1 - this.widget.avatarSizePercentage),
                 ),
-                Container(
-                    width: 40 * this.widget.avatarSizePercentage,
-                    height: 40 * this.widget.avatarSizePercentage,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.rectangle,
-                      image: new DecorationImage(
-                        image: _getUserAvatar(_comment.owner),
-                        fit: BoxFit.cover,
-                      ),
-                    )),
+                GestureDetector(
+                  onTap: _handleAvatarTap,
+                  child: Container(
+                      width: 40 * this.widget.avatarSizePercentage,
+                      height: 40 * this.widget.avatarSizePercentage,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.rectangle,
+                        image: new DecorationImage(
+                          image: _getUserAvatar(_comment.owner),
+                          fit: BoxFit.cover,
+                        ),
+                      )),
+                ),
               ],
             ),
             Padding(
@@ -252,12 +273,15 @@ class _CommentTileState extends State<CommentTile> {
                 children: [
                   // Header
                   Row(children: [
-                    Text(
-                      _getOwnerName(_comment.owner),
-                      style: Theme.of(context).textTheme.subtitle2.copyWith(
-                          fontSize: 10,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold),
+                    GestureDetector(
+                      onTap: _handleAvatarTap,
+                      child: Text(
+                        _getOwnerName(_comment.owner),
+                        style: Theme.of(context).textTheme.subtitle2.copyWith(
+                            fontSize: 10,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold),
+                      ),
                     ),
                     Padding(
                       padding: EdgeInsets.only(left: defaultPadding * 0.75),

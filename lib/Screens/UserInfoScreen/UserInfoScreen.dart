@@ -15,9 +15,11 @@ import 'package:flutter_application_1/constant.dart';
 import 'package:tuple/tuple.dart';
 
 class UserInfoScreen extends StatefulWidget {
-  UserInfoScreen({Key key, @required this.model}) : super(key: key);
+  UserInfoScreen({Key key, @required this.model, this.realtime = true})
+      : super(key: key);
 
   final UserModel model;
+  final bool realtime;
 
   @override
   _UserInfoScreenState createState() => _UserInfoScreenState();
@@ -93,7 +95,7 @@ class _UserInfoScreenState extends State<UserInfoScreen>
   @override
   void initState() {
     super.initState();
-    if (widget.model != null) {
+    if (widget.model != null && widget.realtime) {
       userDataSub = FirebaseFirestore.instance
           .collection("users")
           .doc(UserCredentialService.instance.currentUser.uid)

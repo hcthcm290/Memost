@@ -15,6 +15,7 @@ import 'package:flutter_application_1/Model/Reaction.dart';
 import 'package:flutter_application_1/Model/Reaction_Type.dart';
 import 'package:flutter_application_1/Model/UserModel.dart';
 import 'package:flutter_application_1/Screens/DetailPostScreen/DetailPostScreen.dart';
+import 'package:flutter_application_1/Screens/UserInfoScreen/UserInfoScreen.dart';
 import 'package:flutter_application_1/Services/UserCredentialService.dart';
 import 'package:flutter_application_1/constant.dart';
 import 'package:http/http.dart';
@@ -337,7 +338,37 @@ class _PostUIState extends State<PostUI> {
     _reaction.upload(reactionPath);
   }
 
-  void _handleUsernameTap() {}
+  void _handleUsernameTap() async {
+    var ownerSnap = await db.FirebaseFirestore.instance
+        .collection("users")
+        .where("username", isEqualTo: ownerName)
+        .get();
+
+    UserModel ownerModel = UserModel();
+    ownerModel.fromMap(ownerSnap.docs[0].data());
+
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) =>
+                UserInfoScreen(model: ownerModel, realtime: false)));
+  }
+
+  void _handleAvatarTap() async {
+    var ownerSnap = await db.FirebaseFirestore.instance
+        .collection("users")
+        .where("username", isEqualTo: ownerName)
+        .get();
+
+    UserModel ownerModel = UserModel();
+    ownerModel.fromMap(ownerSnap.docs[0].data());
+
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) =>
+                UserInfoScreen(model: ownerModel, realtime: false)));
+  }
 
   void _handle3DotTap() {}
 
@@ -367,20 +398,23 @@ class _PostUIState extends State<PostUI> {
                 children: [
                   // Avatar
                   /// this is a way for more customize circle avatar of a post //
-                  Container(
-                      width: 25,
-                      height: 25,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.rectangle,
-                        image: new DecorationImage(
-                          image: _avatarImage != null
-                              ? _avatarImage
-                              : Image.asset(
-                                      "assets/logo/default-group-avatar.png")
-                                  .image,
-                          fit: BoxFit.cover,
-                        ),
-                      )),
+                  GestureDetector(
+                    onTap: _handleAvatarTap,
+                    child: Container(
+                        width: 25,
+                        height: 25,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.rectangle,
+                          image: new DecorationImage(
+                            image: _avatarImage != null
+                                ? _avatarImage
+                                : Image.asset(
+                                        "assets/logo/default-group-avatar.png")
+                                    .image,
+                            fit: BoxFit.cover,
+                          ),
+                        )),
+                  ),
 
                   // the simple round avatar
                   // ClipRRect(
