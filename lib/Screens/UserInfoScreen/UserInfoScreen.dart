@@ -1,3 +1,7 @@
+import 'dart:async';
+
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/Model/UserModel.dart';
@@ -23,6 +27,7 @@ class _UserInfoScreenState extends State<UserInfoScreen>
   ImageProvider _avatarImage;
   String _totalPostCount;
   String _totalLikeCount;
+  StreamSubscription<DocumentSnapshot> userDataSub;
 
   List<Tuple2> _pages = [];
 
@@ -50,6 +55,23 @@ class _UserInfoScreenState extends State<UserInfoScreen>
   @override
   void initState() {
     super.initState();
+    if (widget.model != null) {
+      userDataSub = FirebaseFirestore.instance
+          .collection("users")
+          .doc(UserCredentialService.instance.currentUser.uid)
+          .snapshots()
+          .listen((docSnap) {
+        widget.model.fromMap(docSnap.data());
+        if (widget.model.avatarUrl != null && widget.model.avatarUrl != "") {
+          _avatarImage = CachedNetworkImageProvider(widget.model.avatarUrl);
+        } else {
+          _avatarImage = null;
+        }
+        if (mounted) {
+          setState(() {});
+        }
+      });
+    }
     _pages = [
       Tuple2(
           "Post",
@@ -205,7 +227,7 @@ class _UserInfoScreenState extends State<UserInfoScreen>
                               horizontal: defaultPadding,
                               vertical: defaultPadding),
                           child: Text(
-                            "My Funny Collection",
+                            widget.model.description,
                             style: Theme.of(context)
                                 .textTheme
                                 .subtitle2
