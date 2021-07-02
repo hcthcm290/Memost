@@ -75,7 +75,7 @@ class _UserInfoScreenState extends State<UserInfoScreen>
           backgroundColor: Colors.black,
           title: Row(
             children: [
-              Text("${this.widget.model.username}",
+              Text("${this.widget.model.displayName}",
                   style: Theme.of(context).textTheme.bodyText1.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -136,7 +136,7 @@ class _UserInfoScreenState extends State<UserInfoScreen>
                               child: Container(
                                 width: 180,
                                 child: Text(
-                                  "${this.widget.model.username}",
+                                  "${this.widget.model.displayName}",
                                   maxLines: 1,
                                   softWrap: true,
                                   overflow: TextOverflow.ellipsis,

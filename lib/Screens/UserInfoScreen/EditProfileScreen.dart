@@ -131,7 +131,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
                 Flexible(
                   child: TextFormField(
-                    initialValue: "${widget.userModel.username}",
+                    initialValue: "${widget.userModel.displayName}",
                     textAlign: TextAlign.end,
                     style: Theme.of(context)
                         .textTheme
