@@ -43,7 +43,7 @@ class _TagScreenState extends State<TagScreen> {
               .where((element) =>
                   DateTimeRange(
                     end: DateTime.now(),
-                    start: (DateTime.parse(element.data()["createdDate"])),
+                    start: (element.data()["createdDate"].toDate()),
                   ).duration.inDays <=
                   7)
               .length;
@@ -52,7 +52,7 @@ class _TagScreenState extends State<TagScreen> {
               .where((element) =>
                   DateTimeRange(
                     end: DateTime.now(),
-                    start: (DateTime.parse(element.data()["createdDate"])),
+                    start: (element.data()["createdDate"].toDate()),
                   ).duration.inDays <=
                   30)
               .length;
