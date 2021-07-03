@@ -5,6 +5,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/Model/Reaction.dart';
+import 'package:flutter_application_1/Model/Reaction_Type.dart';
 import 'package:flutter_application_1/Model/UserModel.dart';
 import 'package:flutter_application_1/Screens/CreateGroupScreen/CreateGroupNameScreen.dart';
 import 'package:flutter_application_1/Screens/Login/LoginScreen.dart';
@@ -37,6 +39,37 @@ class _UserInfoDrawerState extends State<UserInfoDrawer> {
                 )));
   }
 
+  Future<int> _calculateUserHeart() async {
+    // get total like
+    QuerySnapshot minePostSnap;
+
+    var minePostQuery = FirebaseFirestore.instance
+        .collection("post")
+        .where("owner", isEqualTo: widget.userModel.username);
+
+    minePostSnap = await minePostQuery.get();
+
+    int totalLoved = 0;
+
+    for (var snap in minePostSnap.docs) {
+      var query2 = FirebaseFirestore.instance
+          .collection("post")
+          .doc(snap.id)
+          .collection("reaction");
+      var value = await query2.get();
+      var data = value.docs.map((e) => Reaction.fromJson(e.data())).toList();
+      int loved = data
+          .where((element) => element.reaction == ReactionType.loved)
+          .length;
+      int hated = data
+          .where((element) => element.reaction == ReactionType.hated)
+          .length;
+      totalLoved += loved - hated;
+    }
+
+    return totalLoved;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -47,8 +80,9 @@ class _UserInfoDrawerState extends State<UserInfoDrawer> {
           .collection("users")
           .doc(UserCredentialService.instance.currentUser.uid)
           .snapshots()
-          .listen((docSnap) {
+          .listen((docSnap) async {
         widget.userModel.fromMap(docSnap.data());
+        widget.userModel.stars = (await _calculateUserHeart()).toString();
         if (mounted) {
           setState(() {});
         }
