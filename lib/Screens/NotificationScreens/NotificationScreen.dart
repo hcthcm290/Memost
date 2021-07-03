@@ -47,11 +47,13 @@ class _NotificationScreenState extends State<NotificationScreen> {
         .get();
 
     for (var notiSnap in listNotiSnap.docs) {
-      NotificationModel model = NotificationModel();
-      model.fromJson(notiSnap.data());
+      if (notiSnap.data()["actor"] != userModel.username) {
+        NotificationModel model = NotificationModel();
+        model.fromJson(notiSnap.data());
 
-      listNotification
-          .add(ReplyNotification(key: ValueKey(model.id), notiModel: model));
+        listNotification
+            .add(ReplyNotification(key: ValueKey(model.id), notiModel: model));
+      }
     }
 
     loading = false;
