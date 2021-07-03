@@ -67,10 +67,16 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
         buildScreen();
       });
     });
-    query.snapshots().listen((value) {
+    db.FirebaseFirestore.instance
+        .collection("post")
+        .doc(widget.postUI.post.id)
+        .collection("comment")
+        .where("isDeleted", isNotEqualTo: "true")
+        .snapshots()
+        .listen((value) {
       this.setState(() {
         snapshot = value;
-        //buildScreen();
+        buildScreen();
       });
     });
 
@@ -84,6 +90,23 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
   List<Widget> _allComment = [];
   List<Widget> _mainScreenComponent = [];
   final ItemScrollController itemScrollController = ItemScrollController();
+
+  Future<void> refresh() async {
+    var query = db.FirebaseFirestore.instance
+        .collection("post")
+        .doc(widget.postUI.post.id)
+        .collection("comment")
+        .where("isDeleted", isNotEqualTo: "true");
+
+    query.get().then((value) {
+      this.setState(() {
+        snapshot = value;
+        buildScreen().then((value) {
+          return;
+        });
+      });
+    });
+  }
 
   Future<void> loadAllComment() async {
     // Todo:
@@ -189,14 +212,17 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
         //     }
         //   },
         // ),
-        ScrollablePositionedList.builder(
-            itemScrollController: itemScrollController,
-            itemCount: _mainScreenComponent.length,
-            itemBuilder: (context, index) {
-              if (index < _mainScreenComponent.length) {
-                return _mainScreenComponent[index];
-              }
-            }),
+        RefreshIndicator(
+          onRefresh: refresh,
+          child: ScrollablePositionedList.builder(
+              itemScrollController: itemScrollController,
+              itemCount: _mainScreenComponent.length,
+              itemBuilder: (context, index) {
+                if (index < _mainScreenComponent.length) {
+                  return _mainScreenComponent[index];
+                }
+              }),
+        ),
         //Bottom comment input field
         buildBottomCommentInput(context),
       ]),

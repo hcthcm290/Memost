@@ -164,11 +164,13 @@ class _CommentDetailScreenState extends State<CommentDetailScreen> {
                 if (index == 0) {
                   // Base comment
                   return CommentTile(
+                    key: ValueKey(this.widget.comment.id),
                     comment: this.widget.comment,
                   );
                 } else {
                   // Sub comment
                   return CommentTile(
+                    key: ValueKey(subComments[index - 1].id),
                     avatarSizePercentage: 0.8,
                     comment: subComments[index - 1],
                   );
