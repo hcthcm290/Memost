@@ -22,6 +22,7 @@ class ReplyNotification extends StatefulWidget {
 class _ReplyNotificationState extends State<ReplyNotification> {
   UserModel _actorModel;
   Comment _comment;
+  Post post;
 
   ImageProvider getAvatar() {
     return AssetImage("assets/logo/default-group-avatar.png");
@@ -43,18 +44,15 @@ class _ReplyNotificationState extends State<ReplyNotification> {
     }
   }
 
-  void _goToNotificationPostDetail() {
-    Post post = Post();
-    post.owner = "Basa102";
-    post.title = "The funniest meme i have ever seen";
-    post.image =
-        "https://preview.redd.it/lwf895ptel571.png?width=960&crop=smart&auto=webp&s=f11838f1f6f95ae4da8fe9e1196396c6b15e0074";
-    PostUI postUI = PostUI(post: post);
+  void _goToNotificationPostDetail() async {
     Navigator.push(
         context,
         MaterialPageRoute(
             builder: (context) => NotificationPostDetail(
-                  postUI: postUI,
+                  postUI: PostUI(
+                    post: post,
+                  ),
+                  comment: _comment,
                 )));
   }
 
@@ -83,7 +81,7 @@ class _ReplyNotificationState extends State<ReplyNotification> {
         .doc(widget.notiModel.postId)
         .get();
 
-    var post = Post.fromJson(_postSnap.data());
+    post = Post.fromJson(_postSnap.data());
 
     _comment = Comment.fromJson(_commentSnap.data(), post);
 
@@ -165,7 +163,7 @@ class _ReplyNotificationState extends State<ReplyNotification> {
                           TextSpan(
                               text: _comment == null
                                   ? ""
-                                  : "${_getDuration(_comment.createdDate)}",
+                                  : "${_getDuration(widget.notiModel.createdDate)}",
                               style: TextStyle(
                                   fontSize: 16,
                                   letterSpacing: 0.3,

@@ -43,19 +43,25 @@ class _NotificationScreenState extends State<NotificationScreen> {
     var listNotiSnap = await FirebaseFirestore.instance
         .collection("notification")
         .where("receiver", isEqualTo: userModel.username)
+        .orderBy("createdDate", descending: true)
         .get();
 
     for (var notiSnap in listNotiSnap.docs) {
       NotificationModel model = NotificationModel();
       model.fromJson(notiSnap.data());
 
-      listNotification.add(ReplyNotification(notiModel: model));
+      listNotification
+          .add(ReplyNotification(key: ValueKey(model.id), notiModel: model));
     }
 
-    setState(() {
-      loading = false;
-      reachTheEnd = true;
-    });
+    loading = false;
+    reachTheEnd = true;
+
+    if (mounted) {
+      setState(() {});
+    }
+
+    return;
   }
 
   Future<void> getMoreNotification() async {
@@ -80,6 +86,14 @@ class _NotificationScreenState extends State<NotificationScreen> {
         .then((value) async {
       userModel = value;
       initNotifications();
+
+      FirebaseFirestore.instance
+          .collection("notification")
+          .snapshots()
+          .listen((event) {
+        initNotifications();
+      });
+
       setState(() {});
     });
 
@@ -109,16 +123,19 @@ class _NotificationScreenState extends State<NotificationScreen> {
           }
           return true;
         },
-        child: ListView.builder(itemBuilder: (context, index) {
-          if (index == listNotification.length && !reachTheEnd) {
-            return CupertinoActivityIndicator(
-              radius: defaultPadding,
-            );
-          } else if (index < listNotification.length) {
-            return listNotification[index];
-          } else
-            return null;
-        }),
+        child: RefreshIndicator(
+          onRefresh: initNotifications,
+          child: ListView.builder(itemBuilder: (context, index) {
+            if (index == listNotification.length && !reachTheEnd) {
+              return CupertinoActivityIndicator(
+                radius: defaultPadding,
+              );
+            } else if (index < listNotification.length) {
+              return listNotification[index];
+            } else
+              return null;
+          }),
+        ),
       ),
       drawer: UserInfoDrawer(
         userModel: this.userModel,

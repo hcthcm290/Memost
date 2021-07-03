@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/CustomWidgets/ListPost.dart';
@@ -30,17 +31,44 @@ class _NotificationPostDetailState extends State<NotificationPostDetail> {
     // Todo:
     // load all comment of the widget.commnt
 
-    _comment = Comment();
-    _comment.createdDate = DateTime.now();
-    _comment.content = "Wow man, best meme, thank you";
-    _comment.owner = "basa";
-    _comment.id = "cauicb1265";
+    _allComment.clear();
 
-    _allComment.add(CommentTile(
-      comment: _comment,
-      numberOfReplies: 2,
-      onReplyClicked: onTapReply,
-    ));
+    if (_comment.prevComment == "") {
+      var allCommentRepSnap = await FirebaseFirestore.instance
+          .collection("post")
+          .doc(_comment.post.id)
+          .collection("comment")
+          .where("prevComment", isEqualTo: _comment.id)
+          .get();
+      _allComment.add(CommentTile(
+        comment: _comment,
+        numberOfReplies: allCommentRepSnap.size,
+        onReplyClicked: onTapReply,
+      ));
+    } else {
+      var prevComment = await FirebaseFirestore.instance
+          .collection("post")
+          .doc(_comment.post.id)
+          .collection("comment")
+          .doc(_comment.prevComment)
+          .get();
+      var prevAllCommentRepSnap = await FirebaseFirestore.instance
+          .collection("post")
+          .doc(_comment.post.id)
+          .collection("comment")
+          .where("prevComment", isEqualTo: _comment.id)
+          .get();
+      _allComment.add(CommentTile(
+        comment: Comment.fromJson(prevComment.data(), _comment.post),
+        numberOfReplies: prevAllCommentRepSnap.size,
+        onReplyClicked: onTapReply,
+      ));
+      _allComment.add(CommentTile(
+        comment: _comment,
+        avatarSizePercentage: 0.8,
+        onReplyClicked: onTapReply,
+      ));
+    }
   }
 
   @override
@@ -134,10 +162,6 @@ class _NotificationPostDetailState extends State<NotificationPostDetail> {
     await loadAllComment();
     for (int i = 0; i < _allComment.length; i++) {
       screenWidget.add(_allComment[i]);
-      screenWidget.add(Divider(
-        height: 1,
-        thickness: 1,
-      ));
     }
 
     screenWidget.add(Container(

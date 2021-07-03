@@ -34,6 +34,7 @@ class CommentTile extends StatefulWidget {
 class _CommentTileState extends State<CommentTile> {
   Comment _comment;
   bool commentLiked;
+  String _ownerName = "";
   bool get _commentLiked {
     if (_reaction == null)
       return commentLiked;
@@ -60,8 +61,18 @@ class _CommentTileState extends State<CommentTile> {
     return Image.asset("assets/logo/default-group-avatar.png").image;
   }
 
-  String _getOwnerName(String userID) {
+  Future<String> _getOwnerName() async {
     // Todo: Fetch data
+
+    var ownerSnap = await db.FirebaseFirestore.instance
+        .collection("users")
+        .where("username", isEqualTo: _comment.owner)
+        .get();
+
+    _ownerName = ownerSnap.docs[0]["displayName"].toString();
+
+    setState(() {});
+
     return _comment.owner;
   }
 
@@ -225,6 +236,7 @@ class _CommentTileState extends State<CommentTile> {
     _comment = this.widget.comment;
 
     initReactionQuery();
+    _getOwnerName();
 
     reactionUserSubscribtion =
         UserCredentialService.instance.onAuthChange.listen((user) {
@@ -276,7 +288,7 @@ class _CommentTileState extends State<CommentTile> {
                     GestureDetector(
                       onTap: _handleAvatarTap,
                       child: Text(
-                        _getOwnerName(_comment.owner),
+                        _ownerName,
                         style: Theme.of(context).textTheme.subtitle2.copyWith(
                             fontSize: 10,
                             color: Colors.white,

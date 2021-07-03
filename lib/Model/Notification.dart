@@ -4,6 +4,7 @@ class NotificationModel {
   String commentId;
   String receiver;
   String id;
+  DateTime createdDate;
 
   void fromJson(Map<String, dynamic> json) {
     postId = json["postId"];
@@ -11,6 +12,9 @@ class NotificationModel {
     commentId = json["commentId"];
     receiver = json["receiver"];
     id = json["id"];
+    if (json["createdDate"] != null) {
+      createdDate = DateTime.parse(json["createdDate"]);
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -20,6 +24,10 @@ class NotificationModel {
     json["commentId"] = commentId;
     json["receiver"] = receiver;
     json["id"] = id;
+    if (createdDate == null) {
+      createdDate = DateTime.now();
+    }
+    json["createdDate"] = createdDate.toString();
 
     return json;
   }
