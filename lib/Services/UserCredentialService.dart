@@ -8,6 +8,7 @@ import 'package:logger/logger.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:http/http.dart' as http;
+import 'package:faker/faker.dart';
 
 class UserCredentialService {
   UserModel model;
@@ -65,8 +66,8 @@ class UserCredentialService {
   FacebookLogin facebookSignIn = new FacebookLogin();
   final googleSignIn = GoogleSignIn();
 
-  Future<UserCredential> registerNewUserWithEmail(
-      String email, String password) async {
+  Future<UserCredential> registerNewUserWithEmail(String email, String password,
+      {String userName = ""}) async {
     if (email == null || password == null) {
       throw Exception('Email và Password không được để trống');
     }
@@ -80,11 +81,16 @@ class UserCredentialService {
         password: password,
       );
 
+      user.displayName = userName != "" ? userName : faker.person.name();
+      user.username = newUser.user.uid;
+
       try {
         await _usersRef.doc(newUser.user.uid).set(user.toMap());
       } catch (e) {
         print(e);
       }
+
+      _onAuthChange.add(newUser.user);
 
       return newUser;
     } on FirebaseAuthException catch (e) {
@@ -104,16 +110,9 @@ class UserCredentialService {
     QuerySnapshot qsnap =
         await _usersRef.where('email', isEqualTo: email).get();
 
-    List<Map<String, dynamic>> list = <Map<String, dynamic>>[];
+    if (qsnap.size > 0) return "email has existed";
 
-    var logger = Logger();
-    qsnap.docs.forEach((element) {
-      list.add(element.data());
-    });
-
-    logger.d("list");
-
-    return "done";
+    return null;
   }
 
   Future<String> loginWithEmailPassword(String email, String password) async {
@@ -147,11 +146,10 @@ class UserCredentialService {
 
         if (!qSnapshot.exists) {
           final newUser = UserModel(
-              username: "basa google",
+              username: usrCredential.user.uid,
               email: usrCredential.user.email,
               password: null,
-              avatarUrl:
-                  "https://yt3.ggpht.com/ytc/AAUvwng30OdQa0xi_lXW1JiW4rY81E5l61WhjpKptAbNUw=s88-c-k-c0x00ffffff-no-rj");
+              avatarUrl: null);
 
           await _usersRef.doc(usrCredential.user.uid).set(newUser.toMap());
 
@@ -220,11 +218,11 @@ class UserCredentialService {
 
         if (!qSnapshot.exists) {
           final newUser = UserModel(
-              username: "basa fb",
-              email: profile["email"],
+              username: usrCredential.user.uid,
+              email: null,
               password: null,
-              avatarUrl:
-                  "https://s3-symbol-logo.tradingview.com/facebook--big.svg");
+              avatarUrl: null);
+          newUser.id = usrCredential.user.uid;
           await _usersRef.doc(usrCredential.user.uid).set(newUser.toMap());
 
           _onAuthChange.add(usrCredential.user);

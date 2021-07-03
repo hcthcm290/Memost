@@ -3,6 +3,8 @@ import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' as db;
+import 'package:flutter_application_1/Model/Notification.dart';
+import 'package:flutter_application_1/Services/UserCredentialService.dart';
 
 import 'Post.dart';
 
@@ -96,7 +98,7 @@ class Comment {
     // */
   }
 
-  Future<void> upload() {
+  Future<void> upload() async {
     if (id != null && id != "")
       return db.FirebaseFirestore.instance
           .collection("post")
@@ -105,20 +107,34 @@ class Comment {
           .doc(id)
           .set(toJson());
     else {
-      return db.FirebaseFirestore.instance
+      var docRef = await db.FirebaseFirestore.instance
           .collection("post")
           .doc(post.id)
           .collection("comment")
-          .add(toJson())
-          .then((docRef) {
-        id = docRef.id;
-        return db.FirebaseFirestore.instance
-            .collection("post")
-            .doc(post.id)
-            .collection("comment")
-            .doc(id)
-            .set(<String, dynamic>{"id": id}, db.SetOptions(merge: true));
-      });
+          .add(toJson());
+      id = docRef.id;
+      await db.FirebaseFirestore.instance
+          .collection("post")
+          .doc(post.id)
+          .collection("comment")
+          .doc(id)
+          .set(<String, dynamic>{"id": id}, db.SetOptions(merge: true));
+
+      // create notification
+      NotificationModel notiModel = NotificationModel();
+      notiModel.postId = post.id;
+      notiModel.actor = (await UserCredentialService.convertToUserModel(
+              UserCredentialService.instance.currentUser))
+          .username;
+      notiModel.commentId = id;
+      notiModel.receiver = post.owner;
+      var notiRef = await db.FirebaseFirestore.instance
+          .collection("notification")
+          .add(notiModel.toJson());
+      notiModel.id = notiRef.id;
+      notiRef.update(notiModel.toJson());
+
+      return;
     }
   }
 }

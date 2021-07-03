@@ -7,6 +7,7 @@ class UserModel {
   String avatarUrl;
   String id;
   String description;
+  String displayName;
 
   UserModel(
       {this.username,
@@ -29,6 +30,7 @@ class UserModel {
     map["stars"] = stars;
     map["avatarUrl"] = avatarUrl;
     map["description"] = description;
+    map["displayName"] = displayName;
 
     return map;
   }
@@ -41,5 +43,6 @@ class UserModel {
     stars = map["stars"];
     avatarUrl = map["avatarUrl"];
     description = map["description"];
+    displayName = map["displayName"];
   }
 }

@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -21,6 +24,9 @@ class UserInfoDrawer extends StatefulWidget {
 }
 
 class _UserInfoDrawerState extends State<UserInfoDrawer> {
+  String userName = "Anonymous";
+  StreamSubscription<DocumentSnapshot> userDataSub;
+
   void onTapMyProfile() async {
     await Future.delayed(Duration(milliseconds: 300));
     Navigator.push(
@@ -34,6 +40,20 @@ class _UserInfoDrawerState extends State<UserInfoDrawer> {
   @override
   void initState() {
     super.initState();
+    getUserName();
+
+    if (widget.userModel != null) {
+      userDataSub = FirebaseFirestore.instance
+          .collection("users")
+          .doc(UserCredentialService.instance.currentUser.uid)
+          .snapshots()
+          .listen((docSnap) {
+        widget.userModel.fromMap(docSnap.data());
+        if (mounted) {
+          setState(() {});
+        }
+      });
+    }
   }
 
   void onTapCreateGroup(context) {
@@ -87,15 +107,15 @@ class _UserInfoDrawerState extends State<UserInfoDrawer> {
         this.widget.userModel.username == "") {
       return "Anonymous";
     } else {
-      return this.widget.userModel.username;
+      return this.widget.userModel.displayName;
     }
   }
 
   ImageProvider getAvatar() {
     if (this.widget.userModel == null) {
       return AssetImage("assets/logo/default-group-avatar.png");
-    } else if (this.widget.userModel.username == null ||
-        this.widget.userModel.username == "") {
+    } else if (this.widget.userModel.avatarUrl == null ||
+        this.widget.userModel.avatarUrl == "") {
       return AssetImage("assets/logo/default-group-avatar.png");
     } else {
       return CachedNetworkImageProvider(this.widget.userModel.avatarUrl);

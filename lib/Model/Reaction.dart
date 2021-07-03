@@ -42,9 +42,12 @@ class Reaction {
     a.owner = json["owner"];
     a.item = json["item"];
     a.reactionType = json["reactionType"];
-    try {
-      a.createdDate = DateTime.parse(json["createdDate"]);
-    } catch (e) {}
+    if (json["createdDate"] != null && json["createdDate"] != "") {
+      try {
+        a.createdDate = DateTime.parse(json["createdDate"]);
+      } catch (e) {}
+    }
+
     return a;
   }
 

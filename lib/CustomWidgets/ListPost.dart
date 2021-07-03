@@ -15,9 +15,12 @@ import 'package:flutter_application_1/Model/Reaction.dart';
 import 'package:flutter_application_1/Model/Reaction_Type.dart';
 import 'package:flutter_application_1/Model/UserModel.dart';
 import 'package:flutter_application_1/Screens/DetailPostScreen/DetailPostScreen.dart';
+import 'package:flutter_application_1/Screens/UserInfoScreen/UserInfoScreen.dart';
 import 'package:flutter_application_1/Services/UserCredentialService.dart';
 import 'package:flutter_application_1/constant.dart';
 import 'package:http/http.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 class PostUI extends StatefulWidget {
   final Post post;
@@ -80,6 +83,7 @@ class _PostUIState extends State<PostUI> {
   }
 
   ImageProvider _avatarImage;
+  String ownerName = "";
 
   _PostUIState() {}
   db.CollectionReference reactionPath;
@@ -96,6 +100,9 @@ class _PostUIState extends State<PostUI> {
       initReactionQuery();
     });
 
+    _getOwnerName();
+    _getAvatarImage();
+
     var query = db.FirebaseFirestore.instance
         .collection("post")
         .doc(widget.post.id)
@@ -103,9 +110,11 @@ class _PostUIState extends State<PostUI> {
         .where("isDeleted", isNotEqualTo: "true");
 
     query.get().then((value) {
-      this.setState(() {
-        commentCount = value.size;
-      });
+      if (mounted) {
+        this.setState(() {
+          commentCount = value.size;
+        });
+      }
     });
 
     var query2 = db.FirebaseFirestore.instance
@@ -113,16 +122,19 @@ class _PostUIState extends State<PostUI> {
         .doc(widget.post.id)
         .collection("reaction");
     query2.get().then((value) {
-      this.setState(() {
-        var data = value.docs.map((e) => Reaction.fromJson(e.data())).toList();
-        int loved = data
-            .where((element) => element.reaction == ReactionType.loved)
-            .length;
-        int hated = data
-            .where((element) => element.reaction == ReactionType.hated)
-            .length;
-        likeCount = loved - hated;
-      });
+      if (mounted) {
+        this.setState(() {
+          var data =
+              value.docs.map((e) => Reaction.fromJson(e.data())).toList();
+          int loved = data
+              .where((element) => element.reaction == ReactionType.loved)
+              .length;
+          int hated = data
+              .where((element) => element.reaction == ReactionType.hated)
+              .length;
+          likeCount = loved - hated;
+        });
+      }
     });
 
     onPostChangeSubscribtion = widget.onPostChanged?.listen((event) {
@@ -153,6 +165,35 @@ class _PostUIState extends State<PostUI> {
     onPostChangeSubscribtion?.cancel();
   }
 
+  Future<void> _getAvatarImage() async {
+    var userQuery = db.FirebaseFirestore.instance
+        .collection("users")
+        .where("username", isEqualTo: "${widget.post.owner}");
+    var userSnap = await userQuery.get();
+    if (userSnap.docs[0].data()["avatarUrl"] != null ||
+        userSnap.docs[0].data()["avatarUrl"] != "") {
+      _avatarImage =
+          CachedNetworkImageProvider(userSnap.docs[0].data()["avatarUrl"]);
+      if (mounted) {
+        setState(() {});
+      }
+    }
+  }
+
+  Future<void> _getOwnerName() async {
+    var userQuery = db.FirebaseFirestore.instance
+        .collection("users")
+        .where("username", isEqualTo: "${widget.post.owner}");
+    var userSnap = await userQuery.get();
+    if (userSnap.docs[0].data()["displayName"] != null ||
+        userSnap.docs[0].data()["displayName"] != "") {
+      ownerName = userSnap.docs[0].data()["displayName"].toString();
+      if (mounted) {
+        setState(() {});
+      }
+    }
+  }
+
   void initReactionQuery() {
     _reaction = null;
     reactionPath = db.FirebaseFirestore.instance
@@ -178,9 +219,11 @@ class _PostUIState extends State<PostUI> {
           }
           return;
         } else {
-          setState(() {
-            _reaction = Reaction.fromJson(value.docs[0].data());
-          });
+          if (mounted) {
+            setState(() {
+              _reaction = Reaction.fromJson(value.docs[0].data());
+            });
+          }
         }
       });
     } catch (e) {
@@ -194,9 +237,11 @@ class _PostUIState extends State<PostUI> {
         _reaction = Reaction.fromJson(value.docs[0].data());
         return;
       }
-      setState(() {
-        _reaction = Reaction.fromJson(value.docs[0].data());
-      });
+      if (mounted) {
+        setState(() {
+          _reaction = Reaction.fromJson(value.docs[0].data());
+        });
+      }
     });
   }
 
@@ -236,7 +281,47 @@ class _PostUIState extends State<PostUI> {
     }
   }
 
-  void _handleShareTap() {}
+  String localImgFilePath = "";
+  bool _processShare = false;
+  File imageFile = null;
+
+  void _handleShareTap() async {
+    var result = showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        });
+
+    if (_processShare) return;
+
+    setState(() {
+      _processShare = true;
+    });
+    try {
+      if (imageFile == null) {
+        var imageURL = widget.post.image;
+        var response = await get(Uri.parse(imageURL));
+
+        var externalStoragePath = (await getExternalStorageDirectory()).path;
+        imageFile = new File('$externalStoragePath/image.png');
+
+        imageFile.writeAsBytes(response.bodyBytes);
+      }
+
+      Share.shareFiles([imageFile.path], subject: "${widget.post.title}");
+    } catch (e) {
+      print(e);
+    }
+
+    Navigator.of(context, rootNavigator: true).pop();
+
+    setState(() {
+      _processShare = false;
+    });
+  }
 
   void _handleCommentTap() {
     if (widget.canNavigateToDetail) {
@@ -253,7 +338,37 @@ class _PostUIState extends State<PostUI> {
     _reaction.upload(reactionPath);
   }
 
-  void _handleUsernameTap() {}
+  void _handleUsernameTap() async {
+    var ownerSnap = await db.FirebaseFirestore.instance
+        .collection("users")
+        .where("username", isEqualTo: ownerName)
+        .get();
+
+    UserModel ownerModel = UserModel();
+    ownerModel.fromMap(ownerSnap.docs[0].data());
+
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) =>
+                UserInfoScreen(model: ownerModel, realtime: false)));
+  }
+
+  void _handleAvatarTap() async {
+    var ownerSnap = await db.FirebaseFirestore.instance
+        .collection("users")
+        .where("username", isEqualTo: ownerName)
+        .get();
+
+    UserModel ownerModel = UserModel();
+    ownerModel.fromMap(ownerSnap.docs[0].data());
+
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) =>
+                UserInfoScreen(model: ownerModel, realtime: false)));
+  }
 
   void _handle3DotTap() {}
 
@@ -283,20 +398,23 @@ class _PostUIState extends State<PostUI> {
                 children: [
                   // Avatar
                   /// this is a way for more customize circle avatar of a post //
-                  Container(
-                      width: 25,
-                      height: 25,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.rectangle,
-                        image: new DecorationImage(
-                          image: _avatarImage != null
-                              ? _avatarImage
-                              : Image.asset(
-                                      "assets/logo/default-group-avatar.png")
-                                  .image,
-                          fit: BoxFit.cover,
-                        ),
-                      )),
+                  GestureDetector(
+                    onTap: _handleAvatarTap,
+                    child: Container(
+                        width: 25,
+                        height: 25,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.rectangle,
+                          image: new DecorationImage(
+                            image: _avatarImage != null
+                                ? _avatarImage
+                                : Image.asset(
+                                        "assets/logo/default-group-avatar.png")
+                                    .image,
+                            fit: BoxFit.cover,
+                          ),
+                        )),
+                  ),
 
                   // the simple round avatar
                   // ClipRRect(
@@ -315,7 +433,7 @@ class _PostUIState extends State<PostUI> {
                           children: [
                             GestureDetector(
                                 onTap: this._handleUsernameTap,
-                                child: Text("${widget.post?.owner}",
+                                child: Text("$ownerName",
                                     style: Theme.of(context)
                                         .textTheme
                                         .bodyText2
@@ -380,18 +498,18 @@ class _PostUIState extends State<PostUI> {
             placeholder: (context, url) => CircularProgressIndicator(),
           ),
           // Footer
-          Padding(
-            padding: EdgeInsets.only(
-                top: defaultPadding * 0.5,
-                bottom: defaultPadding * 0.5,
-                left: defaultPadding * 0.5),
-            child: Row(
-              children: [
-                Spacer(),
+          Row(
+            children: [
+              Spacer(),
 
-                // Love && NotLove
-                GestureDetector(
-                  onTap: _handleLovedTap,
+              // Love && NotLove
+              GestureDetector(
+                onTap: _handleLovedTap,
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    top: defaultPadding * 0.5,
+                    bottom: defaultPadding * 0.5,
+                  ),
                   child: Icon(
                     reaction == ReactionType.loved
                         ? CupertinoIcons.heart_circle_fill
@@ -402,24 +520,33 @@ class _PostUIState extends State<PostUI> {
                         : Colors.white54,
                   ),
                 ),
-                Padding(
-                  padding: EdgeInsets.only(left: defaultPadding),
-                  child: Text(this._likeCount,
-                      style: TextStyle(
-                          fontSize: this.footerFontSize,
-                          letterSpacing: 1.2,
-                          wordSpacing: 2,
-                          fontWeight: FontWeight.w900,
-                          color: reaction == ReactionType.none
-                              ? Colors.white54
-                              : reaction == ReactionType.loved
-                                  ? Colors.redAccent.withAlpha(200)
-                                  : Colors.blue.withAlpha(200))),
-                ),
-                Padding(
-                  padding: EdgeInsets.only(left: defaultPadding),
-                  child: GestureDetector(
-                    onTap: _handleNotLoveTap,
+              ),
+              Padding(
+                padding: EdgeInsets.only(
+                    top: defaultPadding * 0.5,
+                    bottom: defaultPadding * 0.5,
+                    left: defaultPadding),
+                child: Text(this._likeCount,
+                    style: TextStyle(
+                        fontSize: this.footerFontSize,
+                        letterSpacing: 1.2,
+                        wordSpacing: 2,
+                        fontWeight: FontWeight.w900,
+                        color: reaction == ReactionType.none
+                            ? Colors.white54
+                            : reaction == ReactionType.loved
+                                ? Colors.redAccent.withAlpha(200)
+                                : Colors.blue.withAlpha(200))),
+              ),
+              Padding(
+                padding: EdgeInsets.only(left: defaultPadding),
+                child: GestureDetector(
+                  onTap: _handleNotLoveTap,
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      top: defaultPadding * 0.5,
+                      bottom: defaultPadding * 0.5,
+                    ),
                     child: Icon(
                       reaction == ReactionType.hated
                           ? CupertinoIcons.heart_slash_circle_fill
@@ -431,15 +558,22 @@ class _PostUIState extends State<PostUI> {
                     ),
                   ),
                 ),
-                Spacer(
-                  flex: 2,
-                ),
+              ),
+              Spacer(
+                flex: 2,
+              ),
 
-                // Comment
-                GestureDetector(
-                  onTap: this._handleCommentTap,
-                  child: Center(
-                      child: Row(children: [
+              // Comment
+              GestureDetector(
+                onTap: this._handleCommentTap,
+                child: Center(
+                    child: Padding(
+                  padding: EdgeInsets.only(
+                      top: defaultPadding * 0.5,
+                      bottom: defaultPadding * 0.5,
+                      left: defaultPadding * 0.5,
+                      right: defaultPadding * 0.5),
+                  child: Row(children: [
                     Icon(
                       CupertinoIcons.bubble_left_fill,
                       color: Colors.white54,
@@ -456,41 +590,41 @@ class _PostUIState extends State<PostUI> {
                               fontWeight: FontWeight.w800),
                           textAlign: TextAlign.left,
                         )),
+                  ]),
+                )),
+              ),
+              Spacer(
+                flex: 2,
+              ),
+              // Share
+              GestureDetector(
+                onTap: this._handleShareTap,
+                child: Container(
+                  //color: Colors.green,
+                  child: Center(
+                      child: Row(children: [
+                    Padding(
+                        padding: EdgeInsets.fromLTRB(0, 0, 0, 6),
+                        child: Icon(
+                          CupertinoIcons.share_solid,
+                          color: Colors.white54,
+                          size: this.footerIconSize * 0.75,
+                        )),
+                    Padding(
+                        padding:
+                            EdgeInsets.fromLTRB(defaultPadding * 0.5, 0, 0, 0),
+                        child: Text(
+                          'Share',
+                          style: TextStyle(
+                              fontSize: this.footerFontSize,
+                              color: Colors.white54),
+                          textAlign: TextAlign.left,
+                        )),
                   ])),
                 ),
-                Spacer(
-                  flex: 2,
-                ),
-                // Share
-                GestureDetector(
-                  onTap: this._handleShareTap,
-                  child: Container(
-                    //color: Colors.green,
-                    child: Center(
-                        child: Row(children: [
-                      Padding(
-                          padding: EdgeInsets.fromLTRB(0, 0, 0, 6),
-                          child: Icon(
-                            CupertinoIcons.share_solid,
-                            color: Colors.white54,
-                            size: this.footerIconSize * 0.75,
-                          )),
-                      Padding(
-                          padding: EdgeInsets.fromLTRB(
-                              defaultPadding * 0.5, 0, 0, 0),
-                          child: Text(
-                            'Share',
-                            style: TextStyle(
-                                fontSize: this.footerFontSize,
-                                color: Colors.white54),
-                            textAlign: TextAlign.left,
-                          )),
-                    ])),
-                  ),
-                ),
-                Spacer(),
-              ],
-            ),
+              ),
+              Spacer(),
+            ],
           )
         ],
       ),
@@ -650,6 +784,6 @@ class _PostUILoaderState extends State<PostUILoader> {
     if (postUI != null)
       return postUI;
     else
-      return CircularProgressIndicator();
+      return Container();
   }
 }

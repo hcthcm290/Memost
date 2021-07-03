@@ -1,5 +1,6 @@
 import 'dart:ffi';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/CustomWidgets/ListPost.dart';
@@ -8,7 +9,7 @@ import 'package:flutter_application_1/Model/UserModel.dart';
 import 'package:flutter_application_1/constant.dart';
 
 class UserListPost extends StatefulWidget {
-  UserListPost({Key key, this.userModel}) : super(key: key);
+  UserListPost({Key key, @required this.userModel}) : super(key: key);
 
   final UserModel userModel;
 
@@ -19,6 +20,8 @@ class UserListPost extends StatefulWidget {
 class _UserListPostState extends State<UserListPost> {
   List<PostUI> _listMinePost;
   bool _loading = false;
+  bool _hasMore = true;
+  QueryDocumentSnapshot lastSnapshot;
 
   Future<void> getMorePost() async {
     // load and add more mine post to _listMinePost from firebase
@@ -28,19 +31,69 @@ class _UserListPostState extends State<UserListPost> {
 
     _loading = true;
 
-    await Future.delayed(Duration(seconds: 2));
+    var minePostQuery = FirebaseFirestore.instance
+        .collection("post")
+        .where("isDeleted", isEqualTo: "false")
+        .where("owner", isEqualTo: widget.userModel.username)
+        .orderBy("createdDate", descending: true)
+        .startAfterDocument(lastSnapshot)
+        .limit(10);
 
-    for (int i = 0; i < 10; i++) {
-      Post post = Post();
-      post.owner = "Basa102";
-      post.title = "The funniest meme i have ever seen";
-      post.image =
-          "https://preview.redd.it/lwf895ptel571.png?width=960&crop=smart&auto=webp&s=f11838f1f6f95ae4da8fe9e1196396c6b15e0074";
-      _listMinePost.add(PostUI(post: post));
+    var minePostQSnap = await minePostQuery.get();
+
+    if (minePostQSnap.docs.length != 0) {
+      lastSnapshot = minePostQSnap.docs[minePostQSnap.docs.length - 1];
     }
+
+    for (var postSnap in minePostQSnap.docs) {
+      Post post = Post.fromJson(postSnap.data());
+
+      _listMinePost.add(PostUI(
+        post: post,
+      ));
+    }
+
+    if (minePostQSnap.docs.length < 10) _hasMore = false;
+
     setState(() {
       _loading = false;
     });
+  }
+
+  Future<void> initListMinePost() async {
+    if (_loading) return;
+
+    _listMinePost.clear();
+
+    _loading = true;
+
+    var minePostQuery = FirebaseFirestore.instance
+        .collection("post")
+        .where("isDeleted", isEqualTo: "false")
+        .where("owner", isEqualTo: widget.userModel.username)
+        .where("createdDate", isNotEqualTo: "")
+        .orderBy("createdDate", descending: true)
+        .limit(10);
+
+    var minePostQSnap = await minePostQuery.get();
+
+    if (minePostQSnap.docs.length != 0) {
+      lastSnapshot = minePostQSnap.docs[minePostQSnap.docs.length - 1];
+    }
+
+    for (var postSnap in minePostQSnap.docs) {
+      Post post = Post.fromJson(postSnap.data());
+
+      _listMinePost.add(PostUI(
+        post: post,
+      ));
+    }
+
+    if (_listMinePost.length < 10) _hasMore = false;
+
+    _loading = false;
+
+    setState(() {});
   }
 
   @override
@@ -48,7 +101,7 @@ class _UserListPostState extends State<UserListPost> {
     // TODO: implement initState
     super.initState();
     _listMinePost = [];
-    getMorePost();
+    initListMinePost();
   }
 
   @override
@@ -62,20 +115,25 @@ class _UserListPostState extends State<UserListPost> {
 
           if (maxScroll == currentScroll) {
             getMorePost();
+            return;
           }
+          return;
         },
-        child: ListView.builder(
-          itemBuilder: (context, index) {
-            if (index == _listMinePost.length) {
-              return CupertinoActivityIndicator(
-                radius: defaultPadding,
-              );
-            } else if (index < _listMinePost.length) {
-              return _listMinePost[index];
-            } else {
-              return null;
-            }
-          },
+        child: RefreshIndicator(
+          onRefresh: initListMinePost,
+          child: ListView.builder(
+            itemBuilder: (context, index) {
+              if (index == _listMinePost.length && _hasMore) {
+                return CupertinoActivityIndicator(
+                  radius: defaultPadding,
+                );
+              } else if (index < _listMinePost.length) {
+                return _listMinePost[index];
+              } else {
+                return null;
+              }
+            },
+          ),
         ),
       ),
     );

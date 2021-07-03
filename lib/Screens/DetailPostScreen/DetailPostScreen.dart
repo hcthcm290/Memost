@@ -204,7 +204,10 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
 
   Future<void> buildScreen() async {
     List<Widget> screenWidget = [
-      this.widget.postUI,
+      PostUI(
+        post: this.widget.postUI.post,
+        canNavigateToDetail: false,
+      ),
       GestureDetector(
           onTap: _onTapChangeCommentType,
           child: SortComment(currentCommentType: _currentCommentType)),
