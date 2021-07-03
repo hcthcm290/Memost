@@ -97,8 +97,9 @@ class Post {
         String.fromCharCode(upper.codeUnits[upper.length - 1] - 1);
     var query = await db.FirebaseFirestore.instance
         .collection("post")
-        .where("title", isGreaterThan: lower, isLessThan: upper)
+        .where("title", isGreaterThan: lower, isLessThanOrEqualTo: upper)
         .get();
+
     return query.docs.map((e) => Post.fromJson(e.data()));
   }
 }
