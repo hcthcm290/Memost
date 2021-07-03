@@ -35,6 +35,8 @@ class _CommentTileState extends State<CommentTile> {
   Comment _comment;
   bool commentLiked;
   String _ownerName = "";
+  ImageProvider userAvatar =
+      Image.asset("assets/logo/default-group-avatar.png").image;
   bool get _commentLiked {
     if (_reaction == null)
       return commentLiked;
@@ -56,20 +58,30 @@ class _CommentTileState extends State<CommentTile> {
   db.Query reactionQuery;
   Reaction _reaction;
 
-  ImageProvider _getUserAvatar(String userID) {
+  Future<ImageProvider> _getUserAvatar(String userID) async {
     // Todo: fetch user avatar from firebase, if user doesnot have avater return default avatar
+
+    db.FirebaseFirestore.instance
+        .collection("users")
+        .where("username", isEqualTo: _comment.owner)
+        .get();
+
     return Image.asset("assets/logo/default-group-avatar.png").image;
   }
 
-  Future<String> _getOwnerName() async {
-    // Todo: Fetch data
-
+  Future<String> _getOwnerInfo() async {
     var ownerSnap = await db.FirebaseFirestore.instance
         .collection("users")
         .where("username", isEqualTo: _comment.owner)
         .get();
 
     _ownerName = ownerSnap.docs[0]["displayName"].toString();
+    if (ownerSnap.docs[0]["avatarUrl"] != null &&
+        ownerSnap.docs[0]["avatarUrl"] != "") {
+      userAvatar = CachedNetworkImageProvider(ownerSnap.docs[0]["avatarUrl"]);
+    } else {
+      userAvatar = Image.asset("assets/logo/default-group-avatar.png").image;
+    }
 
     setState(() {});
 
@@ -236,7 +248,7 @@ class _CommentTileState extends State<CommentTile> {
     _comment = this.widget.comment;
 
     initReactionQuery();
-    _getOwnerName();
+    _getOwnerInfo();
 
     reactionUserSubscribtion =
         UserCredentialService.instance.onAuthChange.listen((user) {
@@ -268,9 +280,9 @@ class _CommentTileState extends State<CommentTile> {
                       width: 40 * this.widget.avatarSizePercentage,
                       height: 40 * this.widget.avatarSizePercentage,
                       decoration: BoxDecoration(
-                        shape: BoxShape.rectangle,
+                        shape: BoxShape.circle,
                         image: new DecorationImage(
-                          image: _getUserAvatar(_comment.owner),
+                          image: userAvatar,
                           fit: BoxFit.cover,
                         ),
                       )),
