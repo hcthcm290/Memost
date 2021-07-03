@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/Model/UserModel.dart';
 import 'package:flutter_application_1/Screens/CreatePostScreens/LoginModal.dart';
 import 'package:flutter_application_1/Screens/CreatePostScreens/UploadTypeModal.dart';
+import 'package:flutter_application_1/Screens/ExploreScreens/ExploreScreen.dart';
 import 'package:flutter_application_1/Screens/HomeScreen/HomeScreen.dart';
 import 'package:flutter_application_1/Screens/NotificationScreens/NotificationScreen.dart';
 import 'package:flutter_application_1/Screens/TagScreens/TagScreen.dart';
@@ -108,7 +109,7 @@ class _MainScreenState extends State<MainScreen> {
             ),
             TagScreen(),
             NotificationScreen(),
-            _explorePage
+            ExploreScreen()
           ],
           index: _screenIndex,
         ),
