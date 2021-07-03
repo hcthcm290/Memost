@@ -216,11 +216,6 @@ class _UserInfoDrawerState extends State<UserInfoDrawer> {
                         iconData: CupertinoIcons.person_alt_circle,
                         onTap: onTapMyProfile,
                       ),
-                      DrawerNavigateScreenCard(
-                        title: "Create Group",
-                        iconData: CupertinoIcons.person_3,
-                        onTap: () => onTapCreateGroup(context),
-                      ),
                       Spacer(),
                       DrawerNavigateScreenCard(
                         title: "Log out",

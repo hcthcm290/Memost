@@ -49,7 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // TODO: implement initState
     super.initState();
 
-    searchStream.stream.listen((event) {
+    searchStream.stream.listen((event) async {
       searchContent = event;
       setState(() {});
     });
@@ -218,8 +218,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       return Container();
                     }
                   }
-                  if (index ~/ 2 < _listPostUI.length) {
-                    return _listPostUI[index ~/ 2];
+                  if (index ~/ 2 < listPostUI.length) {
+                    return listPostUI[index ~/ 2];
                   } else {
                     return null;
                   }

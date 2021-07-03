@@ -97,10 +97,9 @@ class Post {
         String.fromCharCode(upper.codeUnits[upper.length - 1] - 1);
     var query = await db.FirebaseFirestore.instance
         .collection("post")
-        .where("isDeleted", isNotEqualTo: "true")
         .where("title", isGreaterThan: lower, isLessThanOrEqualTo: upper)
         .get();
 
-    return query.docs.map((e) => Post.fromJson(e.data()));
+    return query.docs.map((e) => Post.fromJson(e.data())).toList();
   }
 }
