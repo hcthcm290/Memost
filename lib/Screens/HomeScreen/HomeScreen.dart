@@ -33,6 +33,8 @@ class _HomeScreenState extends State<HomeScreen> {
   BannerAd _bannerAd;
   bool _isBannerAdReady = false;
 
+  ScrollController scrollController = ScrollController();
+
   @override
   void initState() {
     // TODO: implement initState
@@ -78,7 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
         .where("createdDate", isNotEqualTo: "")
         .orderBy("createdDate", descending: true)
         .startAfterDocument(lastSnapshot)
-        .limit(3);
+        .limit(10);
 
     var value = await query.get();
     snapshot = value;
@@ -105,6 +107,10 @@ class _HomeScreenState extends State<HomeScreen> {
     _loading = true;
 
     _listPostUI.clear();
+    setState(() {});
+
+    await Future.delayed(Duration(seconds: 2));
+
     _hasMore = true;
 
     var query = db.FirebaseFirestore.instance
@@ -112,7 +118,7 @@ class _HomeScreenState extends State<HomeScreen> {
         .where("isDeleted", isEqualTo: "false")
         .where("createdDate", isNotEqualTo: "")
         .orderBy("createdDate", descending: true)
-        .limit(3);
+        .limit(20);
     var value = await query.get();
     snapshot = value;
 
@@ -122,10 +128,13 @@ class _HomeScreenState extends State<HomeScreen> {
     for (var docSnap in snapshot.docs) {
       Post post = Post.fromJson(docSnap.data());
 
-      _listPostUI.add(PostUI(post: post));
+      _listPostUI.add(PostUI(key: ValueKey(post.id), post: post));
     }
 
     if (snapshot.docs.length < 3) _hasMore = false;
+
+    // Future.delayed(Duration(seconds: 2)).then((value) => scrollController
+    //     .animateTo(0, duration: Duration.zero, curve: Curves.ease));
 
     this.setState(() {});
     _loading = false;
@@ -174,6 +183,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: RefreshIndicator(
               onRefresh: refreshList,
               child: ListView.builder(
+                controller: scrollController,
                 itemBuilder: (context, index) {
                   if (index % 2 != 0) {
                     return Divider(
@@ -191,13 +201,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       return Container();
                     }
                   }
-                  // var postUI =
-                  //     Post.fromJson(snapshot?.docs[index ~/ 2]?.data());
-                  // return PostUI(
-                  //   key: ValueKey(postUI.id),
-                  //   post: postUI,
-                  // );
-                  return _listPostUI[index ~/ 2];
+                  if (index ~/ 2 < _listPostUI.length) {
+                    return _listPostUI[index ~/ 2];
+                  } else {
+                    return null;
+                  }
                 },
                 itemCount: itemCount() + 2,
               ),
