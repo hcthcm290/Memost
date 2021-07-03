@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +24,11 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   GlobalKey<ScaffoldState> _key = GlobalKey();
   List<PostUI> _listPostUI = [];
+  List<PostUI> get listPostUI => _listPostUI.where((element) {
+        if (searchContent == null || searchContent == "") return true;
+        return element.post.title.contains(searchContent) ||
+            element.post.owner.contains(searchContent);
+      }).toList();
 
   UserModel userModel = null;
   BuildContext _context;
@@ -29,6 +36,8 @@ class _HomeScreenState extends State<HomeScreen> {
   db.QueryDocumentSnapshot lastSnapshot;
   bool _loading = false;
   bool _hasMore = true;
+  StreamController<String> searchStream = new StreamController<String>();
+  String searchContent;
 
   BannerAd _bannerAd;
   bool _isBannerAdReady = false;
@@ -37,6 +46,11 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
+
+    searchStream.stream.listen((event) {
+      searchContent = event;
+      setState(() {});
+    });
 
     // _bannerAd = BannerAd(
     //   adUnitId: AdHelper.bannerAdUnitId,
@@ -132,9 +146,11 @@ class _HomeScreenState extends State<HomeScreen> {
     return;
   }
 
+  @override
   void dispose() {
     // TODO: Dispose a BannerAd object
     _bannerAd.dispose();
+    searchStream.close();
 
     super.dispose();
   }
@@ -143,7 +159,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (_listPostUI == null || _listPostUI.length == 0)
       return 0;
     else
-      return _listPostUI.length * 2 - 1;
+      return listPostUI.length * 2 - 1;
   }
 
   @override
@@ -158,6 +174,7 @@ class _HomeScreenState extends State<HomeScreen> {
             print("on avatar tapped callback");
             _key.currentState.openDrawer();
           },
+          stream: searchStream.sink,
         ),
         body: Stack(children: [
           NotificationListener<ScrollNotification>(
@@ -197,7 +214,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   //   key: ValueKey(postUI.id),
                   //   post: postUI,
                   // );
-                  return _listPostUI[index ~/ 2];
+                  return listPostUI[index ~/ 2];
                 },
                 itemCount: itemCount() + 2,
               ),

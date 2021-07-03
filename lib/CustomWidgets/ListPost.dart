@@ -170,7 +170,9 @@ class _PostUIState extends State<PostUI> {
         .collection("users")
         .where("username", isEqualTo: "${widget.post.owner}");
     var userSnap = await userQuery.get();
-    if (userSnap.docs[0].data()["avatarUrl"] != null ||
+    if (userSnap != null &&
+        userSnap.size != 0 &&
+        userSnap.docs[0].data()["avatarUrl"] != null &&
         userSnap.docs[0].data()["avatarUrl"] != "") {
       _avatarImage =
           CachedNetworkImageProvider(userSnap.docs[0].data()["avatarUrl"]);
@@ -185,7 +187,9 @@ class _PostUIState extends State<PostUI> {
         .collection("users")
         .where("username", isEqualTo: "${widget.post.owner}");
     var userSnap = await userQuery.get();
-    if (userSnap.docs[0].data()["displayName"] != null ||
+    if (userSnap != null &&
+        userSnap.size != 0 &&
+        userSnap.docs[0].data()["displayName"] != null &&
         userSnap.docs[0].data()["displayName"] != "") {
       ownerName = userSnap.docs[0].data()["displayName"].toString();
       if (mounted) {

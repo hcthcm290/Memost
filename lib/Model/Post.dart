@@ -82,7 +82,10 @@ class Post {
           .set(<String, dynamic>{"id": id}, db.SetOptions(merge: true));
 
       return;
-      ;
     }
+  }
+
+  Iterable<Post> filterPost(Iterable<Post> original, String filter) {
+    return original.where((element) => element.title.contains(filter));
   }
 }

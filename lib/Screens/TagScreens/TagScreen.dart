@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
@@ -21,19 +22,30 @@ class _TagScreenState extends State<TagScreen> {
 
   List<Widget> _tagsWeek = [];
   List<Widget> _tagMonth = [];
+  Map<String, int> newPostInTagWeek = {};
+  Map<String, int> newPostInTagMonth = {};
   final int cutoff = 10;
+
+  StreamController<String> searchStream = new StreamController<String>();
+  String searchContent;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
 
+    searchStream.stream.listen((event) {
+      searchContent = event;
+      setState(() {
+        calculateTop();
+      });
+    });
+
     var query = db.FirebaseFirestore.instance.collection("tag");
     query.get().then((tagValue) async {
       if (tagValue == null || tagValue.size == 0) return;
       List<String> tags = tagValue.docs.map((e) => e.id).toList();
-      Map<String, int> newPostInTagWeek = {};
-      Map<String, int> newPostInTagMonth = {};
+
       for (var item in tags) {
         var deepQuery = query.doc(item).collection("content");
         var currentTag = item;
@@ -60,35 +72,7 @@ class _TagScreenState extends State<TagScreen> {
       }
 
       if (newPostInTagWeek.length <= tags.length) {
-        // Calculate the most popular in week & month
-        List<int> topWeek = newPostInTagWeek.values.toList();
-        topWeek.sort();
-        int cutoffWeek = topWeek[max(topWeek.length - 9, 0)];
-        newPostInTagWeek.removeWhere((key, value) => value < cutoffWeek);
-
-        // newPostInTagMonth
-        //     .removeWhere((key, value) => newPostInTagWeek.containsKey(key));
-
-        if (newPostInTagMonth.length > 0) {
-          List<int> topMonth = newPostInTagMonth.values.toList();
-          topMonth.sort();
-          int cutoffMonth = topMonth[max(topMonth.length - 9, 0)];
-          newPostInTagMonth.removeWhere((key, value) => value < cutoffMonth);
-        }
-
-        // Add to TagWeek & TagMonth
-        for (var item in newPostInTagWeek.keys) {
-          _tagsWeek.add(Tag(
-            tagName: item,
-          ));
-        }
-        for (var item in newPostInTagMonth.keys) {
-          _tagMonth.add(Tag(
-            tagName: item,
-          ));
-        }
-
-        setState(() {});
+        calculateTop();
       }
     });
 
@@ -107,12 +91,55 @@ class _TagScreenState extends State<TagScreen> {
     // */
   }
 
+  void calculateTop() {
+    // Calculate the most popular in week & month
+    Map<String, int> _newPostInTagWeek = Map.of(newPostInTagWeek);
+    if (searchContent != null && searchContent != "")
+      _newPostInTagWeek.removeWhere((tag, i) => !tag.contains(searchContent));
+    if (_newPostInTagWeek.length > 0) {
+      List<int> topWeek = _newPostInTagWeek.values.toList();
+      topWeek.sort();
+      int cutoffWeek = topWeek[max(topWeek.length - cutoff, 0)];
+      _newPostInTagWeek.removeWhere((key, value) => value < cutoffWeek);
+    }
+    // _newPostInTagMonth
+    //     .removeWhere((key, value) => _newPostInTagWeek.containsKey(key));
+    Map<String, int> _newPostInTagMonth = Map.of(newPostInTagMonth);
+    if (_newPostInTagMonth.length > 0) {
+      List<int> topMonth = _newPostInTagMonth.values.toList();
+      topMonth.sort();
+      int cutoffMonth = topMonth[max(topMonth.length - cutoff, 0)];
+      _newPostInTagMonth.removeWhere((key, value) => value < cutoffMonth);
+    }
+
+    // Add to TagWeek & TagMonth
+    for (var item in _newPostInTagWeek.keys) {
+      _tagsWeek.add(Tag(
+        tagName: item,
+      ));
+    }
+    for (var item in _newPostInTagMonth.keys) {
+      _tagMonth.add(Tag(
+        tagName: item,
+      ));
+    }
+
+    setState(() {});
+  }
+
+  @override
+  void dispose() {
+    searchStream.close();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Colors.black,
         appBar: HomeScreenAppBar(
           onAvatarTap: _onAvatarTap,
+          stream: searchStream.sink,
         ),
         body: SingleChildScrollView(
           child: Column(
