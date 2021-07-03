@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/Model/Post.dart';
 import 'package:flutter_application_1/Model/UserModel.dart';
 import 'package:flutter_application_1/Services/UserCredentialService.dart';
 import 'package:flutter_application_1/constant.dart';
@@ -10,8 +13,9 @@ class HomeScreenAppBar extends StatefulWidget with PreferredSizeWidget {
   HomeScreenAppBar({
     Key key,
     @required this.onAvatarTap,
+    this.stream,
   }) : super(key: key);
-
+  final StreamSink<String> stream;
   final VoidCallback onAvatarTap;
 
   @override
@@ -24,7 +28,7 @@ class HomeScreenAppBar extends StatefulWidget with PreferredSizeWidget {
 class _HomeScreenAppBarState extends State<HomeScreenAppBar> {
   int _currentIndex = 0;
   UserModel userModel = null;
-
+  String searchField;
   @override
   void initState() {
     // TODO: implement initState
@@ -97,6 +101,10 @@ class _HomeScreenAppBarState extends State<HomeScreenAppBar> {
                               borderSide: BorderSide.none,
                               borderRadius: BorderRadius.circular(5)),
                         ),
+                        onSubmitted: (value) {
+                          searchField = value;
+                          widget.stream.add(searchField);
+                        },
                       ),
                     ),
                   ),

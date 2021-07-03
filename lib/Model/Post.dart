@@ -82,7 +82,25 @@ class Post {
           .set(<String, dynamic>{"id": id}, db.SetOptions(merge: true));
 
       return;
-      ;
     }
+  }
+
+  Iterable<Post> filterPost(Iterable<Post> original, String filter) {
+    return original.where((element) => element.title.contains(filter));
+  }
+
+  static Future<List<Post>> getPostByFilter(String filter) async {
+    // assumes:
+    // 'ABB' < 'ABCxyz' < 'ABC'
+    String upper = filter.trimRight();
+    String lower = upper.substring(0, upper.length - 1) +
+        String.fromCharCode(upper.codeUnits[upper.length - 1] - 1);
+    var query = await db.FirebaseFirestore.instance
+        .collection("post")
+        .where("isDeleted", isNotEqualTo: "true")
+        .where("title", isGreaterThan: lower, isLessThanOrEqualTo: upper)
+        .get();
+
+    return query.docs.map((e) => Post.fromJson(e.data()));
   }
 }
