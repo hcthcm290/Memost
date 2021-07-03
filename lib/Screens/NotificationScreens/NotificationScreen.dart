@@ -1,8 +1,10 @@
 import 'dart:ffi';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/Model/Notification.dart';
 import 'package:flutter_application_1/Model/UserModel.dart';
 import 'package:flutter_application_1/Screens/HomeScreen/Components/UserInfoDrawer.dart';
 import 'package:flutter_application_1/Screens/NotificationScreens/Components/NotificationScreenAppBar.dart';
@@ -27,13 +29,33 @@ class _NotificationScreenState extends State<NotificationScreen> {
   bool loading = false;
 
   Future<void> initNotifications() async {
-    // Todo: load 10 notifications
-    await Future.delayed(Duration(seconds: 2));
-
-    for (int i = 0; i < 10; i++) {
-      listNotification.add(ReplyNotification());
+    listNotification.clear();
+    if (userModel == null) {
+      if (mounted) {
+        setState(() {});
+      }
+      return;
     }
-    setState(() {});
+    if (loading) return;
+
+    loading = true;
+
+    var listNotiSnap = await FirebaseFirestore.instance
+        .collection("notification")
+        .where("receiver", isEqualTo: userModel.username)
+        .get();
+
+    for (var notiSnap in listNotiSnap.docs) {
+      NotificationModel model = NotificationModel();
+      model.fromJson(notiSnap.data());
+
+      listNotification.add(ReplyNotification(notiModel: model));
+    }
+
+    setState(() {
+      loading = false;
+      reachTheEnd = true;
+    });
   }
 
   Future<void> getMoreNotification() async {
@@ -42,18 +64,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
     loading = true;
 
-    await Future.delayed(Duration(seconds: 2));
-
-    for (int i = 0; i < 10; i++) {
-      listNotification.add(ReplyNotification());
-    }
-
-    if (listNotification.length > 30) {
-      reachTheEnd = true;
-    }
-
     setState(() {
       loading = false;
+      reachTheEnd = true;
     });
   }
 
@@ -61,19 +74,18 @@ class _NotificationScreenState extends State<NotificationScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    initNotifications();
 
     UserCredentialService.convertToUserModel(
             UserCredentialService.instance.currentUser)
-        .then((value) {
-      setState(() {
-        userModel = value;
-      });
+        .then((value) async {
+      userModel = value;
+      initNotifications();
+      setState(() {});
     });
 
     UserCredentialService.instance.onAuthChange.listen((user) async {
       userModel = await UserCredentialService.convertToUserModel(user);
-
+      initNotifications();
       setState(() {});
     });
   }
@@ -93,7 +105,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
           if (maxScroll == currentScroll) {
             getMoreNotification();
+            return true;
           }
+          return true;
         },
         child: ListView.builder(itemBuilder: (context, index) {
           if (index == listNotification.length && !reachTheEnd) {
@@ -102,7 +116,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
             );
           } else if (index < listNotification.length) {
             return listNotification[index];
-          }
+          } else
+            return null;
         }),
       ),
       drawer: UserInfoDrawer(

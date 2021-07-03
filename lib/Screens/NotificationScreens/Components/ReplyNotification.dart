@@ -1,26 +1,46 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/CustomWidgets/ListPost.dart';
 import 'package:flutter_application_1/Model/Comment.dart';
+import 'package:flutter_application_1/Model/Notification.dart';
 import 'package:flutter_application_1/Model/Post.dart';
+import 'package:flutter_application_1/Model/UserModel.dart';
 import 'package:flutter_application_1/Screens/NotificationScreens/Components/NotificationPostDetail.dart';
 import 'package:flutter_application_1/constant.dart';
 
 class ReplyNotification extends StatefulWidget {
-  const ReplyNotification({Key key}) : super(key: key);
+  const ReplyNotification({Key key, @required this.notiModel})
+      : super(key: key);
 
-  //final NotificationModel _notiModel;
+  final NotificationModel notiModel;
 
   @override
   _ReplyNotificationState createState() => _ReplyNotificationState();
 }
 
 class _ReplyNotificationState extends State<ReplyNotification> {
-  String _actor = "Basa Google";
+  UserModel _actorModel;
   Comment _comment;
 
   ImageProvider getAvatar() {
     return AssetImage("assets/logo/default-group-avatar.png");
+  }
+
+  String _getDuration(DateTime dateTime) {
+    Duration ageDuration = DateTime.now().difference(dateTime);
+
+    if (ageDuration.inDays >= 365) {
+      return "${ageDuration.inDays / 365}y";
+    } else if (ageDuration.inDays >= 30) {
+      return "${ageDuration.inDays / 30}m";
+    } else if (ageDuration.inDays > 0) {
+      return "${ageDuration.inDays}d";
+    } else if (ageDuration.inHours > 0) {
+      return "${ageDuration.inHours}h";
+    } else {
+      return "${ageDuration.inMinutes} minutes";
+    }
   }
 
   void _goToNotificationPostDetail() {
@@ -38,13 +58,45 @@ class _ReplyNotificationState extends State<ReplyNotification> {
                 )));
   }
 
+  Future<void> _loadActor() async {
+    var _actorSnap = await FirebaseFirestore.instance
+        .collection("users")
+        .where("username", isEqualTo: this.widget.notiModel.actor)
+        .get();
+
+    _actorModel = UserModel();
+    _actorModel.fromMap(_actorSnap.docs[0].data());
+
+    setState(() {});
+  }
+
+  Future<void> _loadComment() async {
+    var _commentSnap = await FirebaseFirestore.instance
+        .collection("post")
+        .doc(widget.notiModel.postId)
+        .collection("comment")
+        .doc(widget.notiModel.commentId)
+        .get();
+
+    var _postSnap = await FirebaseFirestore.instance
+        .collection("post")
+        .doc(widget.notiModel.postId)
+        .get();
+
+    var post = Post.fromJson(_postSnap.data());
+
+    _comment = Comment.fromJson(_commentSnap.data(), post);
+
+    setState(() {});
+  }
+
   @override
   void initState() {
     super.initState();
 
     // Todo: from widget.notiModel, load _actor and _comment
-    _comment = Comment();
-    _comment.content = "Nice meme, it make my day, thank you";
+    _loadActor();
+    _loadComment();
   }
 
   @override
@@ -79,7 +131,9 @@ class _ReplyNotificationState extends State<ReplyNotification> {
                     text: TextSpan(
                       children: [
                         TextSpan(
-                          text: "$_actor",
+                          text: _actorModel == null
+                              ? ""
+                              : "${_actorModel.displayName}",
                           style: TextStyle(
                               fontSize: 16,
                               letterSpacing: 1,
@@ -109,7 +163,9 @@ class _ReplyNotificationState extends State<ReplyNotification> {
                             ),
                           ),
                           TextSpan(
-                              text: "2h",
+                              text: _comment == null
+                                  ? ""
+                                  : "${_getDuration(_comment.createdDate)}",
                               style: TextStyle(
                                   fontSize: 16,
                                   letterSpacing: 0.3,

@@ -50,8 +50,9 @@ class _DetailPostScreenState extends State<DetailPostScreen> {
     });
     UserCredentialService.instance.onAuthChange.listen((user) async {
       userModel = await UserCredentialService.convertToUserModel(user);
-
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     });
 
     var query = db.FirebaseFirestore.instance
