@@ -67,7 +67,14 @@ class _CommentDetailScreenState extends State<CommentDetailScreen> {
         loadComment();
       });
     });
-    query.snapshots().listen((value) {
+    db.FirebaseFirestore.instance
+        .collection("post")
+        .doc(comment().post.id)
+        .collection("comment")
+        .where("isDeleted", isNotEqualTo: "true")
+        .where("prevComment", isEqualTo: comment().id)
+        .snapshots()
+        .listen((value) {
       this.setState(() {
         snapshot = value;
         loadComment();
