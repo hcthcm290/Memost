@@ -2,15 +2,32 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/Screens/Login/Components/AgreementAndPolicy.dart';
 import 'package:flutter_application_1/Screens/Login/Components/LoginOptionCard.dart';
+import 'package:flutter_application_1/Screens/Login/LoginScreen.dart';
+import 'package:flutter_application_1/Services/UserCredentialService.dart';
 import 'package:flutter_application_1/constant.dart';
 
 class LoginModal extends StatelessWidget {
   const LoginModal({Key key}) : super(key: key);
 
-  void _loginWithGoogle() {}
-  void _loginWithFacebook() {}
-  void _handleLogInTap() {
+  void _loginWithGoogle() async {
+    try {
+      String uid = await UserCredentialService.instance.loginWithGoogle();
+      if (uid != null) {
+        print("signed with google uid: $uid");
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  void _loginWithFacebook() async {
+    String uid = await UserCredentialService.instance.logInWithFacebook();
+  }
+
+  void _handleLogInTap(context) {
     print("login");
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => LoginScreen()));
   }
 
   @override
@@ -73,7 +90,7 @@ class LoginModal extends StatelessWidget {
                       style: Theme.of(context).textTheme.subtitle1.copyWith(
                           color: Colors.blue, fontWeight: FontWeight.w700),
                       recognizer: TapGestureRecognizer()
-                        ..onTap = _handleLogInTap),
+                        ..onTap = () => _handleLogInTap(context)),
                 ]),
               ),
             )
